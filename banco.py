@@ -1,0 +1,96 @@
+
+import sqlite3
+
+
+def conectar():
+    conexao = sqlite3.connect("sgf_industrial.db")
+    conexao.row_factory = sqlite3.Row
+    return conexao
+
+
+def criar_tabelas():
+    conexao = conectar()
+    cursor = conexao.cursor()
+
+    # Tabela de empresas
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS empresas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            cnpj TEXT,
+            telefone TEXT,
+            email TEXT
+        )
+    """)
+
+    # Tabela de clientes
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS clientes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            empresa_id INTEGER NOT NULL,
+            nome TEXT NOT NULL,
+            documento TEXT,
+            telefone TEXT,
+            email TEXT,
+            endereco TEXT,
+            FOREIGN KEY (empresa_id) REFERENCES empresas(id)
+        )
+    """)
+
+    # Tabela de produtos
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS produtos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            empresa_id INTEGER NOT NULL,
+            nome TEXT NOT NULL,
+            descricao TEXT,
+            categoria TEXT,
+            preco_venda REAL DEFAULT 0,
+            quantidade_estoque INTEGER DEFAULT 0,
+            FOREIGN KEY (empresa_id) REFERENCES empresas(id)
+        )
+    """)
+
+    # Tabela de equipamentos
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS equipamentos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            empresa_id INTEGER NOT NULL,
+            nome TEXT NOT NULL,
+            marca TEXT,
+            modelo TEXT,
+            numero_serie TEXT,
+            tipo_gas TEXT,
+            situacao TEXT DEFAULT 'Disponível',
+            valor_diaria REAL DEFAULT 0,
+            valor_semanal REAL DEFAULT 0,
+            valor_mensal REAL DEFAULT 0,
+            FOREIGN KEY (empresa_id) REFERENCES empresas(id)
+        )
+    """)
+        # Tabela de locações
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS locacoes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            empresa_id INTEGER NOT NULL,
+            cliente_id INTEGER NOT NULL,
+            equipamento_id INTEGER NOT NULL,
+            modalidade TEXT NOT NULL,
+            data_retirada TEXT NOT NULL,
+            data_prevista_devolucao TEXT NOT NULL,
+            data_devolucao TEXT,
+            valor REAL DEFAULT 0,
+            situacao TEXT DEFAULT 'Ativa',
+            observacoes TEXT,
+            FOREIGN KEY (empresa_id) REFERENCES empresas(id),
+            FOREIGN KEY (cliente_id) REFERENCES clientes(id),
+            FOREIGN KEY (equipamento_id) REFERENCES equipamentos(id)
+        )
+    """)
+    conexao.commit()
+    conexao.close()
+
+
+if __name__ == "__main__":
+    criar_tabelas()
+    print("Banco de dados do SGF Industrial criado com sucesso!")
