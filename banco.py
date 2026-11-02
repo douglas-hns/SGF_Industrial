@@ -87,6 +87,80 @@ def criar_tabelas():
             FOREIGN KEY (equipamento_id) REFERENCES equipamentos(id)
         )
     """)
+        # Tabela de contas a receber
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS contas_receber (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            empresa_id INTEGER NOT NULL,
+            cliente_id INTEGER,
+            locacao_id INTEGER,
+            descricao TEXT NOT NULL,
+            valor REAL NOT NULL,
+            data_emissao TEXT,
+            data_vencimento TEXT NOT NULL,
+            data_recebimento TEXT,
+            situacao TEXT DEFAULT 'Pendente',
+            observacoes TEXT,
+            FOREIGN KEY (empresa_id) REFERENCES empresas(id),
+            FOREIGN KEY (cliente_id) REFERENCES clientes(id),
+            FOREIGN KEY (locacao_id) REFERENCES locacoes(id)
+        )
+    """)
+
+    # Tabela de contas a pagar
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS contas_pagar (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            empresa_id INTEGER NOT NULL,
+            descricao TEXT NOT NULL,
+            categoria TEXT,
+            fornecedor TEXT,
+            valor REAL NOT NULL,
+            data_emissao TEXT,
+            data_vencimento TEXT NOT NULL,
+            data_pagamento TEXT,
+            situacao TEXT DEFAULT 'Pendente',
+            observacoes TEXT,
+            FOREIGN KEY (empresa_id) REFERENCES empresas(id)
+        )
+    """)
+        # Tabela de contas a receber
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS contas_receber (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            empresa_id INTEGER NOT NULL,
+            cliente_id INTEGER,
+            locacao_id INTEGER,
+            descricao TEXT NOT NULL,
+            valor REAL NOT NULL,
+            data_emissao TEXT,
+            data_vencimento TEXT NOT NULL,
+            data_recebimento TEXT,
+            situacao TEXT DEFAULT 'Pendente',
+            observacoes TEXT,
+            FOREIGN KEY (empresa_id) REFERENCES empresas(id),
+            FOREIGN KEY (cliente_id) REFERENCES clientes(id),
+            FOREIGN KEY (locacao_id) REFERENCES locacoes(id)
+        )
+    """)
+
+    # Tabela de contas a pagar
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS contas_pagar (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            empresa_id INTEGER NOT NULL,
+            descricao TEXT NOT NULL,
+            categoria TEXT,
+            fornecedor TEXT,
+            valor REAL NOT NULL,
+            data_emissao TEXT,
+            data_vencimento TEXT NOT NULL,
+            data_pagamento TEXT,
+            situacao TEXT DEFAULT 'Pendente',
+            observacoes TEXT,
+            FOREIGN KEY (empresa_id) REFERENCES empresas(id)
+        )
+    """)
     conexao.commit()
     conexao.close()
 

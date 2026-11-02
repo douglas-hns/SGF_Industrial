@@ -583,6 +583,44 @@ def editar_equipamento(id):
 @app.route("/")
 def inicio():
 
+    conexao = conectar()
+
+    mes_atual = __import__('datetime').date.today().strftime('%Y-%m')
+
+    total_recebido = conexao.execute("""
+        SELECT COALESCE(SUM(valor), 0)
+        FROM contas_receber
+        WHERE empresa_id = 1
+        AND situacao = 'Recebida'
+        AND data_recebimento LIKE ?
+    """, (mes_atual + '%',)).fetchone()[0]
+
+    total_pago = conexao.execute("""
+        SELECT COALESCE(SUM(valor), 0)
+        FROM contas_pagar
+        WHERE empresa_id = 1
+        AND situacao = 'Paga'
+        AND data_pagamento LIKE ?
+    """, (mes_atual + '%',)).fetchone()[0]
+
+    total_a_receber = conexao.execute("""
+        SELECT COALESCE(SUM(valor), 0)
+        FROM contas_receber
+        WHERE empresa_id = 1
+        AND situacao = 'Pendente'
+    """).fetchone()[0]
+
+    total_a_pagar = conexao.execute("""
+        SELECT COALESCE(SUM(valor), 0)
+        FROM contas_pagar
+        WHERE empresa_id = 1
+        AND situacao = 'Pendente'
+    """).fetchone()[0]
+
+    saldo_caixa = total_recebido - total_pago
+
+    conexao.close()
+
     return render_template_string("""
         <!DOCTYPE html>
         <html lang="pt-br">
@@ -607,19 +645,26 @@ def inicio():
                 }
 
                 .sidebar {
-                    width: 250px;
-                    height: 100vh;
-                    background: #142B45;
-                    color: white;
-                    position: fixed;
-                    padding: 25px 18px;
-                }
+    width: 250px;
+    height: 100vh;
+    background: linear-gradient(180deg, #142B45 0%, #0D1D30 100%);
+    color: white;
+    position: fixed;
+    padding: 25px 18px;
+    box-shadow: 3px 0 12px rgba(0, 0, 0, 0.12);
+    overflow-y: auto;
+}
 
-                .logo {
-                    font-size: 22px;
-                    font-weight: bold;
-                    margin-bottom: 8px;
-                }
+               .logo {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #FFFFFF;
+    white-space: nowrap;
+    margin-bottom: 10px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
 
                 .subtitle {
                     font-size: 11px;
@@ -628,37 +673,85 @@ def inicio():
                 }
 
                 .menu a {
-                    display: block;
-                    color: #D6E2EF;
-                    text-decoration: none;
-                    padding: 14px;
-                    border-radius: 7px;
-                    margin-bottom: 8px;
-                }
+    display: block;
+    color: #D6E2EF;
+    text-decoration: none;
+    padding: 14px 16px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
 
-                .menu a:hover {
-                    background: #2474B8;
-                    color: white;
-                }
-
-                .main {
-                    margin-left: 250px;
-                    padding: 30px;
-                }
+.menu a:hover {
+    background: #2474B8;
+    color: #FFFFFF;
+    padding-left: 20px;
+}
+               .main {
+    margin-left: 250px;
+    padding: 35px;
+    min-height: 100vh;
+    background: #CDD9E7;
+}
 
                 .header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 30px;
-                }
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 20px 25px;
+    background: #FFFFFF;
+    border-radius: 12px;
+    border: 1px solid #E3EAF2;
+    box-shadow: 0 3px 12px rgba(20, 43, 69, 0.05);
+}
+.header h1 {
+    color: #142B45;
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.header p {
+    color: #64748B;
+    font-size: 14px;
+    margin: 0;
+}
 
                 .cards {
-                    display: grid;
-                    grid-template-columns: repeat(3, 1fr);
-                    gap: 20px;
-                    margin-bottom: 25px;
-                }
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 22px;
+    margin-bottom: 30px;
+}
+
+.card {
+    background: #FFFFFF;
+    padding: 25px;
+    border-radius: 12px;
+    border: 1px solid #E3EAF2;
+    box-shadow: 0 3px 12px rgba(20, 43, 69, 0.06);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 7px 18px rgba(20, 43, 69, 0.12);
+}
+
+.card p {
+    color: #64748B;
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+.card h2 {
+    color: #142B45;
+    font-size: 26px;
+    font-weight: bold;
+}
 
                 .card {
                     background: white;
@@ -678,21 +771,46 @@ def inicio():
                 }
 
                 .panel {
-                    background: white;
-                    padding: 25px;
-                    border-radius: 12px;
-                    min-height: 180px;
-                }
+    background: #FFFFFF;
+    padding: 28px;
+    border-radius: 14px;
+    min-height: 180px;
+    border: 1px solid #E3EAF2;
+    box-shadow: 0 3px 12px rgba(20, 43, 69, 0.06);
+    margin-bottom: 25px;
+}
+
+.panel h2 {
+    color: #142B45;
+    font-size: 20px;
+    margin-bottom: 15px;
+}
+
+.panel p {
+    color: #64748B;
+    font-size: 14px;
+    line-height: 1.6;
+}
 
                 .botao {
-                    display: inline-block;
-                    margin-top: 20px;
-                    background: #2474B8;
-                    color: white;
-                    padding: 12px 20px;
-                    border-radius: 7px;
-                    text-decoration: none;
-                }
+    display: inline-block;
+    margin-top: 20px;
+    background: #2474B8;
+    color: #FFFFFF;
+    padding: 13px 22px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.botao:hover {
+    background: #185A91;
+    transform: translateY(-2px);
+}
 
                 @media (max-width: 800px) {
                     .sidebar {
@@ -729,8 +847,9 @@ def inicio():
                     <a href="/clientes">👥 Clientes</a>
                     <a href="/equipamentos">🔧 Equipamentos</a>
                     <a href="#">💰 Fluxo de caixa</a>
-                    <a href="#">📤 Contas a pagar</a>
-                    <a href="#">📥 Contas a receber</a>
+                    <a href="/contas-pagar">📤 Contas a pagar</a>
+<a href="/contas-receber">📥 Contas a receber</a>
+            
                     <a href="#">📊 Relatórios</a>
                     <a href="#">🏢 Empresas</a>
                     <a href="#">⚙ Configurações</a>
@@ -748,46 +867,65 @@ def inicio():
 
                     <strong>Administrador</strong>
                 </header>
+<section class="cards">
 
-                <section class="cards">
+    <div class="card">
+        <p>Resultado do mês</p>
+        <h2>R$ {{ "%.2f"|format(saldo_caixa) }}</h2>
+    </div>
 
-                    <div class="card">
-                        <p>Saldo em caixa</p>
-                        <h2>R$ 0,00</h2>
-                    </div>
+    <div class="card">
+        <p>Total recebido no mês</p>
+        <h2>R$ {{ "%.2f"|format(total_recebido) }}</h2>
+    </div>
 
-                    <div class="card">
-                        <p>Total a receber</p>
-                        <h2>R$ 0,00</h2>
-                    </div>
+    <div class="card">
+        <p>Total pago no mês</p>
+        <h2>R$ {{ "%.2f"|format(total_pago) }}</h2>
+    </div>
 
-                    <div class="card">
-                        <p>Total a pagar</p>
-                        <h2>R$ 0,00</h2>
-                    </div>
+    <div class="card">
+        <p>Total a receber</p>
+        <h2>R$ {{ "%.2f"|format(total_a_receber) }}</h2>
+    </div>
 
-                </section>
+    <div class="card">
+        <p>Total a pagar</p>
+        <h2>R$ {{ "%.2f"|format(total_a_pagar) }}</h2>
+    </div>
 
-                <section class="panel">
+</section>
 
-                    <h2>Resumo financeiro</h2>
+<section class="panel">
 
-                    <p>
-                        Seu painel financeiro está pronto para receber
-                        os primeiros lançamentos.
-                    </p>
+    <h2>Resumo financeiro do mês</h2>
 
-                    <a class="botao" href="/clientes">
-                        Acessar cadastro de clientes
-                    </a>
+    <p>
+        Neste mês, sua empresa recebeu
+        <strong>R$ {{ "%.2f"|format(total_recebido) }}</strong>
+        e realizou pagamentos de
+        <strong>R$ {{ "%.2f"|format(total_pago) }}</strong>.
+    </p>
 
-                </section>
+    <p>
+        O resultado financeiro do mês foi de
+        <strong>R$ {{ "%.2f"|format(saldo_caixa) }}</strong>.
+    </p>
+
+    <a class="botao" href="/contas-receber">
+        Consultar contas a receber
+    </a>
+
+</section>
 
             </main>
-
-        </body>
-        </html>
-    """)
+        """,
+        saldo_caixa=saldo_caixa,
+        total_recebido=total_recebido,
+        total_pago=total_pago,
+        total_a_receber=total_a_receber,
+        total_a_pagar=total_a_pagar
+    )
 
 
 @app.route("/locacoes", methods=["GET", "POST"])
@@ -924,6 +1062,589 @@ def locacoes():
         </table>
       """, clientes=clientes, equipamentos=equipamentos, registros=registros)
 
+# ==========================================
+# CONTAS A RECEBER
+# ==========================================
 
+@app.route("/contas-receber", methods=["GET", "POST"])
+def contas_receber():
+
+    conexao = conectar()
+
+    if request.method == "POST":
+
+        cliente_id = request.form["cliente_id"]
+        descricao = request.form["descricao"]
+        valor = float(request.form["valor"])
+        data_vencimento = request.form["data_vencimento"]
+        observacoes = request.form["observacoes"]
+
+        conexao.execute("""
+            INSERT INTO contas_receber (
+                empresa_id,
+                cliente_id,
+                descricao,
+                valor,
+                data_vencimento,
+                situacao,
+                observacoes
+            )
+            VALUES (?, ?, ?, ?, ?, 'Pendente', ?)
+        """, (
+            1,
+            cliente_id,
+            descricao,
+            valor,
+            data_vencimento,
+            observacoes
+        ))
+
+        conexao.commit()
+        conexao.close()
+
+        return redirect(url_for("contas_receber"))
+
+    clientes = conexao.execute("""
+        SELECT * FROM clientes
+        WHERE empresa_id = 1
+        ORDER BY nome
+    """).fetchall()
+
+    registros = conexao.execute("""
+        SELECT contas_receber.*,
+               clientes.nome AS cliente_nome
+        FROM contas_receber
+        JOIN clientes
+            ON clientes.id = contas_receber.cliente_id
+        WHERE contas_receber.empresa_id = 1
+        ORDER BY contas_receber.data_vencimento
+    """).fetchall()
+
+    conexao.close()
+
+    return render_template_string("""
+        <!DOCTYPE html>
+        <html lang="pt-br">
+
+        <head>
+            <meta charset="UTF-8">
+            <title>Contas a Receber - SGF Industrial</title>
+        </head>
+
+        <body style="font-family: Arial; background: #F2F5F9; padding: 30px;">
+
+            <h1>Contas a Receber</h1>
+
+            <h2>Nova cobrança</h2>
+
+            <form method="POST">
+
+                <label>Cliente:</label><br>
+                <select name="cliente_id" required>
+                    <option value="">Selecione o cliente</option>
+
+                    {% for cliente in clientes %}
+                        <option value="{{ cliente['id'] }}">
+                            {{ cliente['nome'] }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <br><br>
+
+                <label>Descrição:</label><br>
+                <input name="descricao" required>
+
+                <br><br>
+
+                <label>Valor (R$):</label><br>
+                <input type="number" step="0.01" min="0.01"
+                       name="valor" required>
+
+                <br><br>
+
+                <label>Data de vencimento:</label><br>
+                <input type="date" name="data_vencimento" required>
+
+                <br><br>
+
+                <label>Observações:</label><br>
+                <textarea name="observacoes"></textarea>
+
+                <br><br>
+
+                <button type="submit">Salvar cobrança</button>
+
+            </form>
+
+            <hr>
+
+            <h2>Cobranças cadastradas</h2>
+
+            <table border="1" cellpadding="8">
+                <tr>
+                    <th>Cliente</th>
+                    <th>Descrição</th>
+                    <th>Valor</th>
+                    <th>Vencimento</th>
+                    <th>Situação</th>
+                    <th>Ação</th>
+                </tr>
+
+                {% for registro in registros %}
+                <tr>
+                    <td>{{ registro['cliente_nome'] }}</td>
+                    <td>{{ registro['descricao'] }}</td>
+                    <td>R$ {{ "%.2f"|format(registro['valor']) }}</td>
+                    <td>{{ registro['data_vencimento'] }}</td>
+<td>{{ registro['situacao'] }}</td>
+<td>
+    {% if registro['situacao'] == 'Pendente' %}
+        <form method="POST"
+              action="/contas-receber/receber/{{ registro['id'] }}">
+            <button type="submit">Registrar recebimento</button>
+        </form>
+    {% else %}
+        Recebida
+    {% endif %}
+</td>
+</tr>
+                {% else %}
+                <tr>
+                    <td colspan="5">Nenhuma cobrança cadastrada.</td>
+                </tr>
+                {% endfor %}
+
+            </table>
+
+            <br>
+
+            <a href="/">Voltar ao painel</a>
+
+        </body>
+        </html>
+    """, clientes=clientes, registros=registros)
+
+# ==========================================
+# CONTAS A PAGAR
+# ==========================================
+
+@app.route("/contas-pagar", methods=["GET", "POST"])
+def contas_pagar():
+
+    conexao = conectar()
+
+    if request.method == "POST":
+
+        descricao = request.form["descricao"]
+        categoria = request.form["categoria"]
+        fornecedor = request.form["fornecedor"]
+        valor = float(request.form["valor"])
+        data_vencimento = request.form["data_vencimento"]
+        observacoes = request.form["observacoes"]
+
+        conexao.execute("""
+            INSERT INTO contas_pagar (
+                empresa_id,
+                descricao,
+                categoria,
+                fornecedor,
+                valor,
+                data_vencimento,
+                situacao,
+                observacoes
+            )
+            VALUES (?, ?, ?, ?, ?, ?, 'Pendente', ?)
+        """, (
+            1,
+            descricao,
+            categoria,
+            fornecedor,
+            valor,
+            data_vencimento,
+            observacoes
+        ))
+
+        conexao.commit()
+        conexao.close()
+
+        return redirect(url_for("contas_pagar"))
+
+    registros = conexao.execute("""
+        SELECT * FROM contas_pagar
+        WHERE empresa_id = 1
+        ORDER BY data_vencimento
+    """).fetchall()
+
+    conexao.close()
+
+    return render_template_string("""
+        <!DOCTYPE html>
+        <html lang="pt-br">
+
+        <head>
+            <meta charset="UTF-8">
+            <title>Contas a Pagar - SGF Industrial</title>
+        </head>
+
+        <body style="font-family: Arial; background: #F2F5F9; padding: 30px;">
+
+            <h1>Contas a Pagar</h1>
+
+            <h2>Nova despesa</h2>
+
+            <form method="POST">
+
+                <label>Descrição:</label><br>
+                <input name="descricao" required>
+
+                <br><br>
+
+                <label>Categoria:</label><br>
+                <select name="categoria" required>
+                    <option value="">Selecione</option>
+                    <option>Materiais</option>
+                    <option>Fornecedores</option>
+                    <option>Aluguel</option>
+                    <option>Energia elétrica</option>
+                    <option>Água</option>
+                    <option>Internet e telefone</option>
+                    <option>Impostos</option>
+                    <option>Despesas operacionais</option>
+                    <option>Outros</option>
+                </select>
+
+                <br><br>
+
+                <label>Fornecedor:</label><br>
+                <input name="fornecedor">
+
+                <br><br>
+
+                <label>Valor (R$):</label><br>
+                <input type="number" step="0.01" min="0.01"
+                       name="valor" required>
+
+                <br><br>
+
+                <label>Data de vencimento:</label><br>
+                <input type="date" name="data_vencimento" required>
+
+                <br><br>
+
+                <label>Observações:</label><br>
+                <textarea name="observacoes"></textarea>
+
+                <br><br>
+
+                <button type="submit">Salvar despesa</button>
+
+            </form>
+
+            <hr>
+
+            <h2>Despesas cadastradas</h2>
+
+            <table border="1" cellpadding="8">
+                <tr>
+                    <th>Descrição</th>
+                    <th>Categoria</th>
+                    <th>Fornecedor</th>
+                    <th>Valor</th>
+                    <th>Vencimento</th>
+                    <th>Situação</th>
+                    <th>Ação</th>
+                </tr>
+
+                {% for registro in registros %}
+                <tr>
+                    <td>{{ registro['descricao'] }}</td>
+                    <td>{{ registro['categoria'] or '-' }}</td>
+                    <td>{{ registro['fornecedor'] or '-' }}</td>
+                    <td>R$ {{ "%.2f"|format(registro['valor']) }}</td>
+                   <td>{{ registro['data_vencimento'] }}</td>
+<td>{{ registro['situacao'] }}</td>
+<td>
+    {% if registro['situacao'] == 'Pendente' %}
+        <form method="POST"
+              action="/contas-pagar/pagar/{{ registro['id'] }}">
+            <button type="submit">Dar baixa</button>
+        </form>
+    {% else %}
+        Paga
+    {% endif %}
+</td>
+</tr>
+                {% else %}
+                <tr>
+                    <td colspan="6">Nenhuma despesa cadastrada.</td>
+                </tr>
+                {% endfor %}
+
+            </table>
+
+            <br>
+
+            <a href="/">Voltar ao painel</a>
+
+        </body>
+        </html>
+    """, registros=registros)
+# ==========================================
+# REGISTRAR PAGAMENTO
+# ==========================================
+
+@app.route("/contas-pagar/pagar/<int:id>", methods=["POST"])
+def pagar_conta(id):
+
+    conexao = conectar()
+
+    conexao.execute("""
+        UPDATE contas_pagar
+        SET situacao = 'Paga',
+            data_pagamento = date('now', 'localtime')
+        WHERE id = ? AND empresa_id = 1
+    """, (id,))
+
+    conexao.commit()
+    conexao.close()
+
+    return redirect(url_for("contas_pagar"))
+# ==========================================
+# REGISTRAR RECEBIMENTO
+# ==========================================
+
+@app.route("/contas-receber/receber/<int:id>", methods=["POST"])
+def receber_conta(id):
+
+    conexao = conectar()
+
+    conexao.execute("""
+        UPDATE contas_receber
+        SET situacao = 'Recebida',
+            data_recebimento = date('now', 'localtime')
+        WHERE id = ? AND empresa_id = 1
+    """, (id,))
+
+    conexao.commit()
+    conexao.close()
+
+    return redirect(url_for("contas_receber"))
+
+
+@app.route("/fechamento-mensal")
+def fechamento_mensal():
+
+    conexao = conectar()
+
+    mes_atual = request.args.get('mes') or __import__('datetime').date.today().strftime('%Y-%m')
+
+    total_recebido = conexao.execute("""
+        SELECT COALESCE(SUM(valor), 0)
+        FROM contas_receber
+        WHERE empresa_id = 1
+        AND situacao = 'Recebida'
+        AND data_recebimento LIKE ?
+    """, (mes_atual + '%',)).fetchone()[0]
+
+    total_pago = conexao.execute("""
+        SELECT COALESCE(SUM(valor), 0)
+        FROM contas_pagar
+        WHERE empresa_id = 1
+        AND situacao = 'Paga'
+        AND data_pagamento LIKE ?
+    """, (mes_atual + '%',)).fetchone()[0]
+
+    total_a_receber = conexao.execute("""
+        SELECT COALESCE(SUM(valor), 0)
+        FROM contas_receber
+        WHERE empresa_id = 1
+        AND situacao = 'Pendente'
+    """).fetchone()[0]
+
+    total_a_pagar = conexao.execute("""
+        SELECT COALESCE(SUM(valor), 0)
+        FROM contas_pagar
+        WHERE empresa_id = 1
+        AND situacao = 'Pendente'
+    """).fetchone()[0]
+
+    resultado = total_recebido - total_pago
+
+    conexao.close()
+
+    return render_template_string("""
+    <div style="
+        background:#e7edf5;
+        min-height:100vh;
+        padding:35px;
+        font-family:Arial,sans-serif;
+        color:#172c4b;
+    ">
+
+        <div style="max-width:1100px;margin:auto;">
+
+            <div style="margin-bottom:28px;">
+                <h1 style="margin-bottom:8px;">
+                    Fechamento Mensal
+                </h1>
+                <p style="color:#64748b;">
+                    Acompanhe os resultados financeiros da empresa.
+                </p>
+            </div>
+
+            <div style="
+                background:white;
+                padding:24px;
+                border-radius:14px;
+                box-shadow:0 3px 12px rgba(0,0,0,0.06);
+                margin-bottom:28px;
+            ">
+
+                <form method="GET">
+                    <label style="font-weight:bold;">
+                        Selecione o mês:
+                    </label>
+
+                    <input
+                        type="month"
+                        name="mes"
+                        value="{{ mes_atual }}"
+                        style="
+                            padding:10px;
+                            border:1px solid #cbd5e1;
+                            border-radius:8px;
+                            margin:10px;
+                        "
+                    >
+
+                    <button type="submit" style="
+                        background:#1e3a5f;
+                        color:white;
+                        border:0;
+                        padding:11px 22px;
+                        border-radius:8px;
+                        cursor:pointer;
+                    ">
+                        Consultar
+                    </button>
+                </form>
+
+            </div>
+
+            <h2 style="margin-bottom:18px;">
+                Resumo financeiro
+            </h2>
+
+            <div style="
+                display:grid;
+                grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+                gap:18px;
+                margin-bottom:30px;
+            ">
+
+                <div style="
+                    background:white;
+                    padding:24px;
+                    border-radius:14px;
+                    box-shadow:0 3px 12px rgba(0,0,0,0.06);
+                    border-left:5px solid #16a34a;
+                ">
+                    <p style="color:#64748b;">Total recebido</p>
+                    <h2 style="color:#15803d;">
+                        R$ {{ "%.2f"|format(total_recebido) }}
+                    </h2>
+                </div>
+
+                <div style="
+                    background:white;
+                    padding:24px;
+                    border-radius:14px;
+                    box-shadow:0 3px 12px rgba(0,0,0,0.06);
+                    border-left:5px solid #dc2626;
+                ">
+                    <p style="color:#64748b;">Total pago</p>
+                    <h2 style="color:#dc2626;">
+                        R$ {{ "%.2f"|format(total_pago) }}
+                    </h2>
+                </div>
+
+                <div style="
+                    background:white;
+                    padding:24px;
+                    border-radius:14px;
+                    box-shadow:0 3px 12px rgba(0,0,0,0.06);
+                    border-left:5px solid #2563eb;
+                ">
+                    <p style="color:#64748b;">Resultado do mês</p>
+                    <h2 style="color:#1e3a5f;">
+                        R$ {{ "%.2f"|format(resultado) }}
+                    </h2>
+                </div>
+
+            </div>
+
+            <h2 style="margin-bottom:18px;">
+                Contas pendentes
+            </h2>
+
+            <div style="
+                display:grid;
+                grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+                gap:18px;
+                margin-bottom:30px;
+            ">
+
+                <div style="
+                    background:white;
+                    padding:24px;
+                    border-radius:14px;
+                    box-shadow:0 3px 12px rgba(0,0,0,0.06);
+                    border-left:5px solid #2563eb;
+                ">
+                    <p style="color:#64748b;">Total a receber</p>
+                    <h2 style="color:#2563eb;">
+                        R$ {{ "%.2f"|format(total_a_receber) }}
+                    </h2>
+                </div>
+
+                <div style="
+                    background:white;
+                    padding:24px;
+                    border-radius:14px;
+                    box-shadow:0 3px 12px rgba(0,0,0,0.06);
+                    border-left:5px solid #d97706;
+                ">
+                    <p style="color:#64748b;">Total a pagar</p>
+                    <h2 style="color:#d97706;">
+                        R$ {{ "%.2f"|format(total_a_pagar) }}
+                    </h2>
+                </div>
+
+            </div>
+
+            <a href="/" style="
+                display:inline-block;
+                background:#1e3a5f;
+                color:white;
+                padding:12px 22px;
+                border-radius:8px;
+                text-decoration:none;
+            ">
+                Voltar ao Dashboard
+            </a>
+
+        </div>
+    </div>
+    """,
+    total_recebido=total_recebido,
+    total_pago=total_pago,
+    resultado=resultado,
+    total_a_receber=total_a_receber,
+    total_a_pagar=total_a_pagar,
+    mes_atual=mes_atual
+    )
 if __name__ == "__main__":
     app.run(debug=True)
+
+
