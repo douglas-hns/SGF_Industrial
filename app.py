@@ -846,7 +846,7 @@ def inicio():
                     <a href="/">▦ Visão geral</a>
                     <a href="/clientes">👥 Clientes</a>
                     <a href="/equipamentos">🔧 Equipamentos</a>
-                    <a href="#">💰 Fluxo de caixa</a>
+                    <a href="/fluxo-caixa">💰 Fluxo de caixa</a>
                     <a href="/contas-pagar">📤 Contas a pagar</a>
 <a href="/contas-receber">📥 Contas a receber</a>
 <a href="/fechamento-mensal">📅 Fechamento mensal</a>
@@ -1124,108 +1124,284 @@ def contas_receber():
 
     conexao.close()
 
+  
     return render_template_string("""
-        <!DOCTYPE html>
-        <html lang="pt-br">
+    <!DOCTYPE html>
+    <html lang="pt-br">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Contas a Receber - SGF Industrial</title>
 
-        <head>
-            <meta charset="UTF-8">
-            <title>Contas a Receber - SGF Industrial</title>
-        </head>
+        <style>
+            * {
+                box-sizing: border-box;
+            }
 
-        <body style="font-family: Arial; background: #F2F5F9; padding: 30px;">
+            body {
+                margin: 0;
+                padding: 35px;
+                font-family: Arial, sans-serif;
+                background: #e7edf5;
+                color: #172c4b;
+            }
+
+            .container {
+                max-width: 1150px;
+                margin: auto;
+            }
+
+            h1 {
+                margin-bottom: 8px;
+                color: #1e3a5f;
+            }
+
+            .subtitulo {
+                color: #64748b;
+                margin-bottom: 28px;
+            }
+
+            .card {
+                background: white;
+                padding: 25px;
+                border-radius: 14px;
+                margin-bottom: 25px;
+                box-shadow: 0 3px 12px rgba(0,0,0,0.04);
+            }
+
+            .form-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 18px;
+            }
+
+            .campo {
+                display: flex;
+                flex-direction: column;
+                gap: 7px;
+            }
+
+            .campo-completo {
+                grid-column: 1 / -1;
+            }
+
+            label {
+                font-weight: bold;
+                font-size: 14px;
+            }
+
+            input, select, textarea {
+                width: 100%;
+                padding: 12px;
+                border: 1px solid #cbd5e1;
+                border-radius: 8px;
+                font-size: 14px;
+            }
+
+            textarea {
+                min-height: 75px;
+                resize: vertical;
+            }
+
+            button {
+                background: #1e3a5f;
+                color: white;
+                border: none;
+                padding: 12px 22px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: bold;
+            }
+
+            button:hover {
+                background: #294f7c;
+            }
+
+            .tabela-container {
+                overflow-x: auto;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                min-width: 750px;
+            }
+
+            th {
+                background: #e7edf5;
+                text-align: left;
+                padding: 14px;
+                font-size: 13px;
+            }
+
+            td {
+                padding: 14px;
+                border-bottom: 1px solid #e2e8f0;
+                font-size: 14px;
+            }
+
+            .pendente {
+                color: #b45309;
+                font-weight: bold;
+            }
+
+            .recebida {
+                color: #15803d;
+                font-weight: bold;
+            }
+
+            .botao-receber {
+                padding: 8px 13px;
+                font-size: 12px;
+                background: #15803d;
+            }
+
+            .voltar {
+                display: inline-block;
+                margin-top: 10px;
+                color: #1e3a5f;
+                text-decoration: none;
+                font-weight: bold;
+            }
+
+            @media (max-width: 650px) {
+                body {
+                    padding: 18px;
+                }
+
+                .form-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .campo-completo {
+                    grid-column: auto;
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="container">
 
             <h1>Contas a Receber</h1>
 
-            <h2>Nova cobrança</h2>
+            <p class="subtitulo">
+                Gerencie suas cobranças, clientes e recebimentos.
+            </p>
 
-            <form method="POST">
+            <div class="card">
+                <h2>Nova cobrança</h2>
 
-                <label>Cliente:</label><br>
-                <select name="cliente_id" required>
-                    <option value="">Selecione o cliente</option>
+                <form method="POST">
+                    <div class="form-grid">
 
-                    {% for cliente in clientes %}
-                        <option value="{{ cliente['id'] }}">
-                            {{ cliente['nome'] }}
-                        </option>
-                    {% endfor %}
-                </select>
+                        <div class="campo">
+                            <label>Cliente:</label>
+                            <select name="cliente_id" required>
+                                <option value="">Selecione o cliente</option>
+                                {% for cliente in clientes %}
+                                    <option value="{{ cliente['id'] }}">
+                                        {{ cliente['nome'] }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
 
-                <br><br>
+                        <div class="campo">
+                            <label>Descrição:</label>
+                            <input name="descricao" required>
+                        </div>
 
-                <label>Descrição:</label><br>
-                <input name="descricao" required>
+                        <div class="campo">
+                            <label>Valor (R$):</label>
+                            <input type="number" step="0.01" min="0.01"
+                                   name="valor" required>
+                        </div>
 
-                <br><br>
+                        <div class="campo">
+                            <label>Data de vencimento:</label>
+                            <input type="date" name="data_vencimento" required>
+                        </div>
 
-                <label>Valor (R$):</label><br>
-                <input type="number" step="0.01" min="0.01"
-                       name="valor" required>
+                        <div class="campo campo-completo">
+                            <label>Observações:</label>
+                            <textarea name="observacoes"></textarea>
+                        </div>
 
-                <br><br>
+                        <div class="campo campo-completo">
+                            <button type="submit">Salvar cobrança</button>
+                        </div>
 
-                <label>Data de vencimento:</label><br>
-                <input type="date" name="data_vencimento" required>
+                    </div>
+                </form>
+            </div>
 
-                <br><br>
+            <div class="card">
+                <h2>Cobranças cadastradas</h2>
 
-                <label>Observações:</label><br>
-                <textarea name="observacoes"></textarea>
+                <div class="tabela-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Descrição</th>
+                                <th>Valor</th>
+                                <th>Vencimento</th>
+                                <th>Situação</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
 
-                <br><br>
+                        <tbody>
+                            {% for registro in registros %}
+                            <tr>
+                                <td>{{ registro['cliente_nome'] }}</td>
+                                <td>{{ registro['descricao'] }}</td>
+                                <td>R$ {{ "%.2f"|format(registro['valor']) }}</td>
+                                <td>{{ registro['data_vencimento'] }}</td>
 
-                <button type="submit">Salvar cobrança</button>
+                                <td>
+                                    {% if registro['situacao'] == 'Pendente' %}
+                                        <span class="pendente">Pendente</span>
+                                    {% else %}
+                                        <span class="recebida">Recebida</span>
+                                    {% endif %}
+                                </td>
 
-            </form>
+                                <td>
+                                    {% if registro['situacao'] == 'Pendente' %}
+                                        <form method="POST"
+                                              action="/contas-receber/receber/{{ registro['id'] }}">
+                                            <button class="botao-receber"
+                                                    type="submit">
+                                                Registrar recebimento
+                                            </button>
+                                        </form>
+                                    {% else %}
+                                        <span class="recebida">Concluído</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
 
-            <hr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6">
+                                    Nenhuma cobrança cadastrada.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-            <h2>Cobranças cadastradas</h2>
+            <a class="voltar" href="/">← Voltar ao Dashboard</a>
 
-            <table border="1" cellpadding="8">
-                <tr>
-                    <th>Cliente</th>
-                    <th>Descrição</th>
-                    <th>Valor</th>
-                    <th>Vencimento</th>
-                    <th>Situação</th>
-                    <th>Ação</th>
-                </tr>
-
-                {% for registro in registros %}
-                <tr>
-                    <td>{{ registro['cliente_nome'] }}</td>
-                    <td>{{ registro['descricao'] }}</td>
-                    <td>R$ {{ "%.2f"|format(registro['valor']) }}</td>
-                    <td>{{ registro['data_vencimento'] }}</td>
-<td>{{ registro['situacao'] }}</td>
-<td>
-    {% if registro['situacao'] == 'Pendente' %}
-        <form method="POST"
-              action="/contas-receber/receber/{{ registro['id'] }}">
-            <button type="submit">Registrar recebimento</button>
-        </form>
-    {% else %}
-        Recebida
-    {% endif %}
-</td>
-</tr>
-                {% else %}
-                <tr>
-                    <td colspan="5">Nenhuma cobrança cadastrada.</td>
-                </tr>
-                {% endfor %}
-
-            </table>
-
-            <br>
-
-            <a href="/">Voltar ao painel</a>
-
-        </body>
-        </html>
+        </div>
+    </body>
+    </html>
     """, clientes=clientes, registros=registros)
+ 
 
 # ==========================================
 # CONTAS A PAGAR
@@ -1280,118 +1456,295 @@ def contas_pagar():
 
     conexao.close()
 
+ 
     return render_template_string("""
-        <!DOCTYPE html>
-        <html lang="pt-br">
+    <!DOCTYPE html>
+    <html lang="pt-br">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Contas a Pagar - SGF Industrial</title>
 
-        <head>
-            <meta charset="UTF-8">
-            <title>Contas a Pagar - SGF Industrial</title>
-        </head>
+        <style>
+            * {
+                box-sizing: border-box;
+            }
 
-        <body style="font-family: Arial; background: #F2F5F9; padding: 30px;">
+            body {
+                margin: 0;
+                padding: 35px;
+                font-family: Arial, sans-serif;
+                background: #e7edf5;
+                color: #172c4b;
+            }
+
+            .container {
+                max-width: 1150px;
+                margin: auto;
+            }
+
+            h1 {
+                margin-bottom: 8px;
+                color: #1e3a5f;
+            }
+
+            .subtitulo {
+                color: #64748b;
+                margin-bottom: 28px;
+            }
+
+            .card {
+                background: white;
+                padding: 25px;
+                border-radius: 14px;
+                margin-bottom: 25px;
+                box-shadow: 0 3px 12px rgba(0,0,0,0.04);
+            }
+
+            .form-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 18px;
+            }
+
+            .campo {
+                display: flex;
+                flex-direction: column;
+                gap: 7px;
+            }
+
+            .campo-completo {
+                grid-column: 1 / -1;
+            }
+
+            label {
+                font-weight: bold;
+                font-size: 14px;
+            }
+
+            input, select, textarea {
+                width: 100%;
+                padding: 12px;
+                border: 1px solid #cbd5e1;
+                border-radius: 8px;
+                font-size: 14px;
+            }
+
+            textarea {
+                min-height: 75px;
+                resize: vertical;
+            }
+
+            button {
+                background: #1e3a5f;
+                color: white;
+                border: none;
+                padding: 12px 22px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: bold;
+            }
+
+            button:hover {
+                background: #294f7c;
+            }
+
+            .tabela-container {
+                overflow-x: auto;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                min-width: 750px;
+            }
+
+            th {
+                background: #e7edf5;
+                text-align: left;
+                padding: 14px;
+                font-size: 13px;
+            }
+
+            td {
+                padding: 14px;
+                border-bottom: 1px solid #e2e8f0;
+                font-size: 14px;
+            }
+
+            .pendente {
+                color: #b45309;
+                font-weight: bold;
+            }
+
+            .paga {
+                color: #15803d;
+                font-weight: bold;
+            }
+
+            .botao-baixa {
+                padding: 8px 13px;
+                font-size: 12px;
+                background: #15803d;
+            }
+
+            .voltar {
+                display: inline-block;
+                margin-top: 10px;
+                color: #1e3a5f;
+                text-decoration: none;
+                font-weight: bold;
+            }
+
+            @media (max-width: 650px) {
+                body {
+                    padding: 18px;
+                }
+
+                .form-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .campo-completo {
+                    grid-column: auto;
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="container">
 
             <h1>Contas a Pagar</h1>
 
-            <h2>Nova despesa</h2>
+            <p class="subtitulo">
+                Gerencie suas despesas, fornecedores e pagamentos.
+            </p>
 
-            <form method="POST">
+            <div class="card">
+                <h2>Nova despesa</h2>
 
-                <label>Descrição:</label><br>
-                <input name="descricao" required>
+                <form method="POST">
+                    <div class="form-grid">
 
-                <br><br>
+                        <div class="campo">
+                            <label>Descrição:</label>
+                            <input name="descricao" required>
+                        </div>
 
-                <label>Categoria:</label><br>
-                <select name="categoria" required>
-                    <option value="">Selecione</option>
-                    <option>Materiais</option>
-                    <option>Fornecedores</option>
-                    <option>Aluguel</option>
-                    <option>Energia elétrica</option>
-                    <option>Água</option>
-                    <option>Internet e telefone</option>
-                    <option>Impostos</option>
-                    <option>Despesas operacionais</option>
-                    <option>Outros</option>
-                </select>
+                        <div class="campo">
+                            <label>Categoria:</label>
+                            <select name="categoria" required>
+                                <option value="">Selecione</option>
+                                <option>Materiais</option>
+                                <option>Fornecedores</option>
+                                <option>Aluguel</option>
+                                <option>Energia elétrica</option>
+                                <option>Água</option>
+                                <option>Internet e telefone</option>
+                                <option>Impostos</option>
+                                <option>Despesas operacionais</option>
+                                <option>Outros</option>
+                            </select>
+                        </div>
 
-                <br><br>
+                        <div class="campo">
+                            <label>Fornecedor:</label>
+                            <input name="fornecedor">
+                        </div>
 
-                <label>Fornecedor:</label><br>
-                <input name="fornecedor">
+                        <div class="campo">
+                            <label>Valor (R$):</label>
+                            <input type="number" step="0.01" min="0.01"
+                                   name="valor" required>
+                        </div>
 
-                <br><br>
+                        <div class="campo">
+                            <label>Data de vencimento:</label>
+                            <input type="date" name="data_vencimento" required>
+                        </div>
 
-                <label>Valor (R$):</label><br>
-                <input type="number" step="0.01" min="0.01"
-                       name="valor" required>
+                        <div class="campo campo-completo">
+                            <label>Observações:</label>
+                            <textarea name="observacoes"></textarea>
+                        </div>
 
-                <br><br>
+                        <div class="campo campo-completo">
+                            <button type="submit">Salvar despesa</button>
+                        </div>
 
-                <label>Data de vencimento:</label><br>
-                <input type="date" name="data_vencimento" required>
+                    </div>
+                </form>
+            </div>
 
-                <br><br>
+            <div class="card">
+                <h2>Despesas cadastradas</h2>
 
-                <label>Observações:</label><br>
-                <textarea name="observacoes"></textarea>
+                <div class="tabela-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Descrição</th>
+                                <th>Categoria</th>
+                                <th>Fornecedor</th>
+                                <th>Valor</th>
+                                <th>Vencimento</th>
+                                <th>Situação</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
 
-                <br><br>
+                        <tbody>
+                            {% for registro in registros %}
+                            <tr>
+                                <td>{{ registro['descricao'] }}</td>
+                                <td>{{ registro['categoria'] or '-' }}</td>
+                                <td>{{ registro['fornecedor'] or '-' }}</td>
+                                <td>R$ {{ "%.2f"|format(registro['valor']) }}</td>
+                                <td>{{ registro['data_vencimento'] }}</td>
 
-                <button type="submit">Salvar despesa</button>
+                                <td>
+                                    {% if registro['situacao'] == 'Pendente' %}
+                                        <span class="pendente">Pendente</span>
+                                    {% else %}
+                                        <span class="paga">Paga</span>
+                                    {% endif %}
+                                </td>
 
-            </form>
+                                <td>
+                                    {% if registro['situacao'] == 'Pendente' %}
+                                        <form method="POST"
+                                              action="/contas-pagar/pagar/{{ registro['id'] }}">
+                                            <button class="botao-baixa"
+                                                    type="submit">
+                                                Dar baixa
+                                            </button>
+                                        </form>
+                                    {% else %}
+                                        <span class="paga">Concluído</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
 
-            <hr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7">
+                                    Nenhuma despesa cadastrada.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-            <h2>Despesas cadastradas</h2>
+            <a class="voltar" href="/">← Voltar ao Dashboard</a>
 
-            <table border="1" cellpadding="8">
-                <tr>
-                    <th>Descrição</th>
-                    <th>Categoria</th>
-                    <th>Fornecedor</th>
-                    <th>Valor</th>
-                    <th>Vencimento</th>
-                    <th>Situação</th>
-                    <th>Ação</th>
-                </tr>
-
-                {% for registro in registros %}
-                <tr>
-                    <td>{{ registro['descricao'] }}</td>
-                    <td>{{ registro['categoria'] or '-' }}</td>
-                    <td>{{ registro['fornecedor'] or '-' }}</td>
-                    <td>R$ {{ "%.2f"|format(registro['valor']) }}</td>
-                   <td>{{ registro['data_vencimento'] }}</td>
-<td>{{ registro['situacao'] }}</td>
-<td>
-    {% if registro['situacao'] == 'Pendente' %}
-        <form method="POST"
-              action="/contas-pagar/pagar/{{ registro['id'] }}">
-            <button type="submit">Dar baixa</button>
-        </form>
-    {% else %}
-        Paga
-    {% endif %}
-</td>
-</tr>
-                {% else %}
-                <tr>
-                    <td colspan="6">Nenhuma despesa cadastrada.</td>
-                </tr>
-                {% endfor %}
-
-            </table>
-
-            <br>
-
-            <a href="/">Voltar ao painel</a>
-
-        </body>
-        </html>
+        </div>
+    </body>
+    </html>
     """, registros=registros)
+   
 # ==========================================
 # REGISTRAR PAGAMENTO
 # ==========================================
@@ -1881,6 +2234,252 @@ def fechamento_anual():
     meses=meses
     )
 
+@app.route("/fluxo-caixa")
+def fluxo_caixa():
+
+    conexao = conectar()
+
+    recebimentos = conexao.execute("""
+        SELECT descricao, valor, data_recebimento AS data, 'Entrada' AS tipo
+        FROM contas_receber
+        WHERE empresa_id = 1
+        AND situacao = 'Recebida'
+    """).fetchall()
+
+    pagamentos = conexao.execute("""
+        SELECT descricao, valor, data_pagamento AS data, 'Saída' AS tipo
+        FROM contas_pagar
+        WHERE empresa_id = 1
+        AND situacao = 'Paga'
+    """).fetchall()
+
+    movimentacoes = list(recebimentos) + list(pagamentos)
+
+    movimentacoes.sort(
+        key=lambda item: item['data'] or '',
+        reverse=True
+    )
+
+    total_entradas = sum(item['valor'] for item in recebimentos)
+    total_saidas = sum(item['valor'] for item in pagamentos)
+    saldo = total_entradas - total_saidas
+
+    conexao.close()
+
+   
+    return render_template_string("""
+    <!DOCTYPE html>
+    <html lang="pt-br">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Fluxo de Caixa - SGF Industrial</title>
+
+        <style>
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                margin: 0;
+                padding: 35px;
+                font-family: Arial, sans-serif;
+                background: #e7edf5;
+                color: #172c4b;
+            }
+
+            .container {
+                max-width: 1150px;
+                margin: auto;
+            }
+
+            h1 {
+                color: #1e3a5f;
+                margin-bottom: 8px;
+            }
+
+            .subtitulo {
+                color: #64748b;
+                margin-bottom: 28px;
+            }
+
+            .resumo {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                gap: 18px;
+                margin-bottom: 28px;
+            }
+
+            .card {
+                background: white;
+                padding: 24px;
+                border-radius: 14px;
+                box-shadow: 0 3px 12px rgba(0,0,0,0.04);
+            }
+
+            .card p {
+                color: #64748b;
+                margin-top: 0;
+            }
+
+            .entrada {
+                border-left: 5px solid #16a34a;
+            }
+
+            .saida {
+                border-left: 5px solid #dc2626;
+            }
+
+            .saldo {
+                border-left: 5px solid #2563eb;
+            }
+
+            .entrada h2 {
+                color: #15803d;
+            }
+
+            .saida h2 {
+                color: #dc2626;
+            }
+
+            .saldo h2 {
+                color: #1e3a5f;
+            }
+
+            .tabela-container {
+                overflow-x: auto;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                min-width: 650px;
+            }
+
+            th {
+                background: #e7edf5;
+                text-align: left;
+                padding: 14px;
+                font-size: 13px;
+            }
+
+            td {
+                padding: 14px;
+                border-bottom: 1px solid #e2e8f0;
+                font-size: 14px;
+            }
+
+            .tipo-entrada {
+                color: #15803d;
+                font-weight: bold;
+            }
+
+            .tipo-saida {
+                color: #dc2626;
+                font-weight: bold;
+            }
+
+            .voltar {
+                display: inline-block;
+                margin-top: 25px;
+                color: #1e3a5f;
+                text-decoration: none;
+                font-weight: bold;
+            }
+
+            @media (max-width: 650px) {
+                body {
+                    padding: 18px;
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="container">
+
+            <h1>Fluxo de Caixa</h1>
+
+            <p class="subtitulo">
+                Acompanhe as entradas, saídas e resultados financeiros da empresa.
+            </p>
+
+            <div class="resumo">
+
+                <div class="card entrada">
+                    <p>Total de entradas</p>
+                    <h2>R$ {{ "%.2f"|format(total_entradas) }}</h2>
+                </div>
+
+                <div class="card saida">
+                    <p>Total de saídas</p>
+                    <h2>R$ {{ "%.2f"|format(total_saidas) }}</h2>
+                </div>
+
+                <div class="card saldo">
+                    <p>Saldo do período</p>
+                    <h2>R$ {{ "%.2f"|format(saldo) }}</h2>
+                </div>
+
+            </div>
+
+            <div class="card">
+
+                <h2>Movimentações financeiras</h2>
+
+                <div class="tabela-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Descrição</th>
+                                <th>Tipo</th>
+                                <th>Valor</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for item in movimentacoes %}
+                            <tr>
+                                <td>{{ item['data'] }}</td>
+                                <td>{{ item['descricao'] }}</td>
+
+                                <td>
+                                    {% if item['tipo'] == 'Entrada' %}
+                                        <span class="tipo-entrada">Entrada</span>
+                                    {% else %}
+                                        <span class="tipo-saida">Saída</span>
+                                    {% endif %}
+                                </td>
+
+                                <td>R$ {{ "%.2f"|format(item['valor']) }}</td>
+                            </tr>
+
+                            {% else %}
+                            <tr>
+                                <td colspan="4">
+                                    Nenhuma movimentação financeira cadastrada.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+            <a class="voltar" href="/">← Voltar ao Dashboard</a>
+
+        </div>
+    </body>
+    </html>
+    """,
+    total_entradas=total_entradas,
+    total_saidas=total_saidas,
+    saldo=saldo,
+    movimentacoes=movimentacoes
+    )
+ 
 
 if __name__ == "__main__":
     app.run(debug=True)
