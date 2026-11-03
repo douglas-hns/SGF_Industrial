@@ -1,6 +1,7 @@
 
 from flask import Flask, render_template_string, request, redirect, url_for
 from banco import conectar, criar_tabelas
+from datetime import date
 
 app = Flask(__name__)
 
@@ -2235,23 +2236,59 @@ def fechamento_anual():
     )
 
 @app.route("/fluxo-caixa")
+
 def fluxo_caixa():
+    hoje = date.today()
+    mes_selecionado = request.args.get(
+        'mes', hoje.strftime('%Y-%m')
+    )
+
+    # Validar o mês selecionado
+    try:
+        ano, mes = mes_selecionado.split('-')
+        ano = int(ano)
+        mes = int(mes)
+
+        if mes < 1 or mes > 12 or ano < 1900 or ano > 9999:
+            raise ValueError
+
+        mes_selecionado = f"{ano:04d}-{mes:02d}"
+
+    except (ValueError, TypeError):
+        ano = hoje.year
+        mes = hoje.month
+        mes_selecionado = hoje.strftime('%Y-%m')
+
+    data_inicio = f"{ano:04d}-{mes:02d}-01"
+
+    if mes == 12:
+        data_fim = f"{ano + 1:04d}-01-01"
+    else:
+        data_fim = f"{ano:04d}-{mes + 1:02d}-01"
 
     conexao = conectar()
 
     recebimentos = conexao.execute("""
-        SELECT descricao, valor, data_recebimento AS data, 'Entrada' AS tipo
+        SELECT descricao, valor,
+               data_recebimento AS data,
+               'Entrada' AS tipo
         FROM contas_receber
         WHERE empresa_id = 1
         AND situacao = 'Recebida'
-    """).fetchall()
+        AND data_recebimento >= ?
+        AND data_recebimento < ?
+    """, (data_inicio, data_fim)).fetchall()
 
     pagamentos = conexao.execute("""
-        SELECT descricao, valor, data_pagamento AS data, 'Saída' AS tipo
+        SELECT descricao, valor,
+               data_pagamento AS data,
+               'Saída' AS tipo
         FROM contas_pagar
         WHERE empresa_id = 1
         AND situacao = 'Paga'
-    """).fetchall()
+        AND data_pagamento >= ?
+        AND data_pagamento < ?
+    """, (data_inicio, data_fim)).fetchall()
 
     movimentacoes = list(recebimentos) + list(pagamentos)
 
@@ -2260,19 +2297,25 @@ def fluxo_caixa():
         reverse=True
     )
 
-    total_entradas = sum(item['valor'] for item in recebimentos)
-    total_saidas = sum(item['valor'] for item in pagamentos)
+    total_entradas = sum(
+        item['valor'] for item in recebimentos
+    )
+
+    total_saidas = sum(
+        item['valor'] for item in pagamentos
+    )
+
     saldo = total_entradas - total_saidas
 
     conexao.close()
 
-   
     return render_template_string("""
     <!DOCTYPE html>
     <html lang="pt-br">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
         <title>Fluxo de Caixa - SGF Industrial</title>
 
         <style>
@@ -2303,9 +2346,45 @@ def fluxo_caixa():
                 margin-bottom: 28px;
             }
 
+            .filtro {
+                background: white;
+                padding: 20px;
+                border-radius: 12px;
+                margin-bottom: 25px;
+                display: flex;
+                align-items: center;
+                gap: 15px;
+                flex-wrap: wrap;
+            }
+
+            .filtro label {
+                font-weight: bold;
+            }
+
+            .filtro input {
+                padding: 10px;
+                border: 1px solid #cbd5e1;
+                border-radius: 6px;
+            }
+
+            .filtro button {
+                padding: 10px 18px;
+                background: #1e3a5f;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+            }
+
+            .filtro button:hover {
+                background: #294f7c;
+            }
+
             .resumo {
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                grid-template-columns: repeat(
+                    auto-fit, minmax(220px, 1fr)
+                );
                 gap: 18px;
                 margin-bottom: 28px;
             }
@@ -2404,6 +2483,24 @@ def fluxo_caixa():
                 Acompanhe as entradas, saídas e resultados financeiros da empresa.
             </p>
 
+            <form method="GET" class="filtro">
+
+                <label for="mes">Selecione o mês:</label>
+
+                <input
+                    type="month"
+                    id="mes"
+                    name="mes"
+                    value="{{ mes_selecionado }}"
+                    required
+                >
+
+                <button type="submit">
+                    Consultar
+                </button>
+
+            </form>
+
             <div class="resumo">
 
                 <div class="card entrada">
@@ -2428,6 +2525,7 @@ def fluxo_caixa():
                 <h2>Movimentações financeiras</h2>
 
                 <div class="tabela-container">
+
                     <table>
                         <thead>
                             <tr>
@@ -2439,7 +2537,9 @@ def fluxo_caixa():
                         </thead>
 
                         <tbody>
+
                             {% for item in movimentacoes %}
+
                             <tr>
                                 <td>{{ item['data'] }}</td>
                                 <td>{{ item['descricao'] }}</td>
@@ -2452,23 +2552,30 @@ def fluxo_caixa():
                                     {% endif %}
                                 </td>
 
-                                <td>R$ {{ "%.2f"|format(item['valor']) }}</td>
+                                <td>
+                                    R$ {{ "%.2f"|format(item['valor']) }}
+                                </td>
                             </tr>
 
                             {% else %}
+
                             <tr>
                                 <td colspan="4">
-                                    Nenhuma movimentação financeira cadastrada.
+                                    Nenhuma movimentação financeira cadastrada neste mês.
                                 </td>
                             </tr>
+
                             {% endfor %}
+
                         </tbody>
                     </table>
-                </div>
 
+                </div>
             </div>
 
-            <a class="voltar" href="/">← Voltar ao Dashboard</a>
+            <a class="voltar" href="/">
+                ← Voltar ao Dashboard
+            </a>
 
         </div>
     </body>
@@ -2477,9 +2584,11 @@ def fluxo_caixa():
     total_entradas=total_entradas,
     total_saidas=total_saidas,
     saldo=saldo,
-    movimentacoes=movimentacoes
+    movimentacoes=movimentacoes,
+    mes_selecionado=mes_selecionado
     )
- 
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)
