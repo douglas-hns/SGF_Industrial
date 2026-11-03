@@ -850,6 +850,7 @@ def inicio():
                     <a href="/contas-pagar">📤 Contas a pagar</a>
 <a href="/contas-receber">📥 Contas a receber</a>
 <a href="/fechamento-mensal">📅 Fechamento mensal</a>
+<a href="/fechamento-anual">📊 Fechamento anual</a>
             
                     <a href="#">📊 Relatórios</a>
                     <a href="#">🏢 Empresas</a>
@@ -1645,6 +1646,242 @@ def fechamento_mensal():
     total_a_pagar=total_a_pagar,
     mes_atual=mes_atual
     )
+
+@app.route("/fechamento-anual")
+def fechamento_anual():
+
+    conexao = conectar()
+
+    ano_atual = request.args.get('ano') or str(__import__('datetime').date.today().year)
+
+    dados_mensais = conexao.execute("""
+        SELECT
+            substr(data_recebimento, 6, 2) AS mes,
+            SUM(valor) AS total
+        FROM contas_receber
+        WHERE empresa_id = 1
+        AND situacao = 'Recebida'
+        AND data_recebimento LIKE ?
+        GROUP BY substr(data_recebimento, 6, 2)
+    """, (ano_atual + '%',)).fetchall()
+
+    dados_pagamentos = conexao.execute("""
+        SELECT
+            substr(data_pagamento, 6, 2) AS mes,
+            SUM(valor) AS total
+        FROM contas_pagar
+        WHERE empresa_id = 1
+        AND situacao = 'Paga'
+        AND data_pagamento LIKE ?
+        GROUP BY substr(data_pagamento, 6, 2)
+    """, (ano_atual + '%',)).fetchall()
+
+    recebimentos = {int(item['mes']): item['total'] for item in dados_mensais}
+    pagamentos = {int(item['mes']): item['total'] for item in dados_pagamentos}
+
+    nomes_meses = [
+        'Janeiro', 'Fevereiro', 'Março', 'Abril',
+        'Maio', 'Junho', 'Julho', 'Agosto',
+        'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    ]
+
+    meses = []
+
+    for numero in range(1, 13):
+        recebido = recebimentos.get(numero, 0) or 0
+        pago = pagamentos.get(numero, 0) or 0
+
+        meses.append({
+            'nome': nomes_meses[numero - 1],
+            'recebido': recebido,
+            'pago': pago,
+            'resultado': recebido - pago
+        })
+
+    total_recebido = sum(item['recebido'] for item in meses)
+    total_pago = sum(item['pago'] for item in meses)
+    resultado_anual = total_recebido - total_pago
+
+    total_a_receber = conexao.execute("""
+        SELECT COALESCE(SUM(valor), 0)
+        FROM contas_receber
+        WHERE empresa_id = 1
+        AND situacao = 'Pendente'
+    """).fetchone()[0]
+
+    total_a_pagar = conexao.execute("""
+        SELECT COALESCE(SUM(valor), 0)
+        FROM contas_pagar
+        WHERE empresa_id = 1
+        AND situacao = 'Pendente'
+    """).fetchone()[0]
+
+    conexao.close()
+
+    return render_template_string("""
+    <div style="
+        background:#e7edf5;
+        min-height:100vh;
+        padding:35px;
+        font-family:Arial,sans-serif;
+        color:#172c4b;
+    ">
+
+        <div style="max-width:1100px;margin:auto;">
+
+            <h1>Fechamento Anual</h1>
+
+            <p style="color:#64748b;margin:10px 0 28px;">
+                Acompanhe os resultados financeiros do ano.
+            </p>
+
+            <div style="
+                background:white;
+                padding:24px;
+                border-radius:14px;
+                margin-bottom:28px;
+            ">
+
+                <form method="GET">
+                    <label><strong>Selecione o ano:</strong></label>
+
+                    <input
+                        type="number"
+                        name="ano"
+                        value="{{ ano_atual }}"
+                        min="2000"
+                        max="2100"
+                        style="padding:10px;margin:10px;border-radius:8px;border:1px solid #cbd5e1;"
+                    >
+
+                    <button type="submit" style="
+                        background:#1e3a5f;
+                        color:white;
+                        border:0;
+                        padding:11px 22px;
+                        border-radius:8px;
+                        cursor:pointer;
+                    ">
+                        Consultar
+                    </button>
+                </form>
+
+            </div>
+
+            <h2 style="margin-bottom:18px;">Resumo do ano</h2>
+
+            <div style="
+                display:grid;
+                grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+                gap:18px;
+                margin-bottom:30px;
+            ">
+
+                <div style="background:white;padding:24px;border-radius:14px;border-left:5px solid #16a34a;">
+                    <p>Total recebido</p>
+                    <h2 style="color:#15803d;">
+                        R$ {{ "%.2f"|format(total_recebido) }}
+                    </h2>
+                </div>
+
+                <div style="background:white;padding:24px;border-radius:14px;border-left:5px solid #dc2626;">
+                    <p>Total pago</p>
+                    <h2 style="color:#dc2626;">
+                        R$ {{ "%.2f"|format(total_pago) }}
+                    </h2>
+                </div>
+
+                <div style="background:white;padding:24px;border-radius:14px;border-left:5px solid #2563eb;">
+                    <p>Resultado anual</p>
+                    <h2 style="color:#1e3a5f;">
+                        R$ {{ "%.2f"|format(resultado_anual) }}
+                    </h2>
+                </div>
+
+            </div>
+
+            <h2 style="margin-bottom:18px;">Contas pendentes</h2>
+
+            <div style="
+                display:grid;
+                grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+                gap:18px;
+                margin-bottom:30px;
+            ">
+
+                <div style="background:white;padding:24px;border-radius:14px;border-left:5px solid #2563eb;">
+                    <p>Total a receber</p>
+                    <h2>R$ {{ "%.2f"|format(total_a_receber) }}</h2>
+                </div>
+
+                <div style="background:white;padding:24px;border-radius:14px;border-left:5px solid #d97706;">
+                    <p>Total a pagar</p>
+                    <h2>R$ {{ "%.2f"|format(total_a_pagar) }}</h2>
+                </div>
+
+            </div>
+
+            <h2 style="margin-bottom:18px;">Resultado por mês</h2>
+
+            <div style="background:white;padding:20px;border-radius:14px;overflow-x:auto;">
+
+                <table style="width:100%;border-collapse:collapse;">
+                    <thead>
+                        <tr style="background:#e7edf5;">
+                            <th style="padding:12px;text-align:left;">Mês</th>
+                            <th style="padding:12px;text-align:right;">Recebido</th>
+                            <th style="padding:12px;text-align:right;">Pago</th>
+                            <th style="padding:12px;text-align:right;">Resultado</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for item in meses %}
+                        <tr>
+                            <td style="padding:12px;border-bottom:1px solid #e2e8f0;">
+                                {{ item.nome }}
+                            </td>
+                            <td style="padding:12px;text-align:right;border-bottom:1px solid #e2e8f0;">
+                                R$ {{ "%.2f"|format(item.recebido) }}
+                            </td>
+                            <td style="padding:12px;text-align:right;border-bottom:1px solid #e2e8f0;">
+                                R$ {{ "%.2f"|format(item.pago) }}
+                            </td>
+                            <td style="padding:12px;text-align:right;border-bottom:1px solid #e2e8f0;">
+                                R$ {{ "%.2f"|format(item.resultado) }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+            </div>
+
+            <a href="/" style="
+                display:inline-block;
+                background:#1e3a5f;
+                color:white;
+                padding:12px 22px;
+                border-radius:8px;
+                text-decoration:none;
+                margin-top:25px;
+            ">
+                Voltar ao Dashboard
+            </a>
+
+        </div>
+    </div>
+    """,
+    ano_atual=ano_atual,
+    total_recebido=total_recebido,
+    total_pago=total_pago,
+    resultado_anual=resultado_anual,
+    total_a_receber=total_a_receber,
+    total_a_pagar=total_a_pagar,
+    meses=meses
+    )
+
+
 if __name__ == "__main__":
     app.run(debug=True)
 
