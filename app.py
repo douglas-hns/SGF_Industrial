@@ -849,6 +849,7 @@ def inicio():
                     <a href="#">💰 Fluxo de caixa</a>
                     <a href="/contas-pagar">📤 Contas a pagar</a>
 <a href="/contas-receber">📥 Contas a receber</a>
+<a href="/fechamento-mensal">📅 Fechamento mensal</a>
             
                     <a href="#">📊 Relatórios</a>
                     <a href="#">🏢 Empresas</a>
