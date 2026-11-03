@@ -618,8 +618,51 @@ def inicio():
         AND situacao = 'Pendente'
     """).fetchone()[0]
 
-    saldo_caixa = total_recebido - total_pago
 
+    meses_financeiros = []
+
+    hoje = date.today()
+
+    for deslocamento in range(5, -1, -1):
+
+        numero_mes = hoje.year * 12 + hoje.month - 1 - deslocamento
+
+        ano = numero_mes // 12
+        mes = numero_mes % 12 + 1
+
+        mes_referencia = f"{ano:04d}-{mes:02d}"
+
+        entradas = conexao.execute("""
+            SELECT COALESCE(SUM(valor), 0)
+            FROM contas_receber
+            WHERE empresa_id = 1
+            AND situacao = 'Recebida'
+            AND data_recebimento LIKE ?
+        """, (mes_referencia + '%',)).fetchone()[0]
+
+        saidas = conexao.execute("""
+            SELECT COALESCE(SUM(valor), 0)
+            FROM contas_pagar
+            WHERE empresa_id = 1
+            AND situacao = 'Paga'
+            AND data_pagamento LIKE ?
+        """, (mes_referencia + '%',)).fetchone()[0]
+
+        meses_financeiros.append({
+            "mes": f"{mes:02d}/{str(ano)[-2:]}",
+            "entradas": entradas,
+            "saidas": saidas,
+            "resultado": entradas - saidas
+        })
+
+    maior_movimento = max(
+        [max(m["entradas"], m["saidas"]) for m in meses_financeiros] or [0]
+    )
+    maior_resultado = max(
+        [abs(m["resultado"]) for m in meses_financeiros] or [0]
+    )
+
+    saldo_caixa = total_recebido - total_pago
     conexao.close()
 
     return render_template_string("""
@@ -901,6 +944,84 @@ def inicio():
 
 <section class="panel">
 
+    <h2>Entradas x Saídas — Últimos 6 meses</h2>
+    {% if maior_movimento == 0 %}
+    <p style="background: #F1F5F9; padding: 18px; border-radius: 8px; color: #64748B; text-align: center;">
+        Sem movimentações financeiras neste período.
+    </p>
+{% endif %}
+
+    {% for item in meses_financeiros %}
+
+    <div style="margin-bottom: 22px;">
+
+        <strong>{{ item.mes }}</strong>
+
+        <p style="margin-top: 10px;">
+            Entradas: R$ {{ "%.2f"|format(item.entradas) }}
+        </p>
+
+        <div style="background: #E5EAF0; height: 14px; border-radius: 10px; overflow: hidden;">
+            <div style="background: #16A36A; height: 14px; width: {{ (item.entradas / maior_movimento * 100) if maior_movimento > 0 else 0 }}%; border-radius: 10px;">
+            </div>
+        </div>
+
+        <p style="margin-top: 10px;">
+            Saídas: R$ {{ "%.2f"|format(item.saidas) }}
+        </p>
+
+        <div style="background: #E5EAF0; height: 14px; border-radius: 10px; overflow: hidden;">
+            <div style="background: #D9534F; height: 14px; width: {{ (item.saidas / maior_movimento * 100) if maior_movimento > 0 else 0 }}%; border-radius: 10px;">
+            </div>
+        </div>
+
+    </div>
+
+    {% endfor %}
+
+</section>
+<section class="panel">
+
+    <h2>Evolução do Resultado Financeiro</h2>
+
+    {% if maior_resultado == 0 %}
+
+        <p style="background: #F1F5F9; padding: 18px; border-radius: 8px; color: #64748B; text-align: center;">
+            Ainda não existem resultados financeiros neste período.
+        </p>
+
+    {% else %}
+
+        {% for item in meses_financeiros %}
+
+        <div style="margin-bottom: 20px;">
+
+            <strong>{{ item.mes }}</strong>
+
+            <p style="margin-top: 8px; font-weight: bold; color: {% if item.resultado >= 0 %}#16A36A{% else %}#D9534F{% endif %};">
+                R$ {{ "%.2f"|format(item.resultado) }}
+            </p>
+
+            <div style="background: #E5EAF0; height: 16px; border-radius: 10px; overflow: hidden;">
+
+                <div style="
+                    background: {% if item.resultado >= 0 %}#16A36A{% else %}#D9534F{% endif %};
+                    height: 16px;
+                    width: {{ (item.resultado|abs / maior_resultado * 100) if maior_resultado > 0 else 0 }}%;
+                    border-radius: 10px;">
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    {% endif %}
+
+</section>
+<section class="panel">
+
     <h2>Resumo financeiro do mês</h2>
 
     <p>
@@ -927,8 +1048,11 @@ def inicio():
         total_recebido=total_recebido,
         total_pago=total_pago,
         total_a_receber=total_a_receber,
-        total_a_pagar=total_a_pagar
-    )
+        total_a_pagar=total_a_pagar,
+        meses_financeiros=meses_financeiros,
+        maior_movimento=maior_movimento,
+        maior_resultado=maior_resultado
+    )  
 
 
 @app.route("/locacoes", methods=["GET", "POST"])
