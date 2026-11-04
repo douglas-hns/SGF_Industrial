@@ -37,20 +37,53 @@ def criar_tabelas():
         )
     """)
 
-    # Tabela de produtos
+      # Tabela de produtos
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS produtos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             empresa_id INTEGER NOT NULL,
+            codigo TEXT NOT NULL,
             nome TEXT NOT NULL,
             descricao TEXT,
             categoria TEXT,
             preco_venda REAL DEFAULT 0,
             quantidade_estoque INTEGER DEFAULT 0,
-            FOREIGN KEY (empresa_id) REFERENCES empresas(id)
+            estoque_minimo INTEGER DEFAULT 0,
+            FOREIGN KEY (empresa_id) REFERENCES empresas(id),
+            UNIQUE (empresa_id, codigo)
+        )
+    """)
+    
+    # Tabela de movimentações de estoque
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS movimentacoes_estoque (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            empresa_id INTEGER NOT NULL,
+            produto_id INTEGER NOT NULL,
+            tipo TEXT NOT NULL,
+            quantidade INTEGER NOT NULL,
+            motivo TEXT,
+            data_movimentacao TEXT NOT NULL,
+            FOREIGN KEY (empresa_id) REFERENCES empresas(id),
+            FOREIGN KEY (produto_id) REFERENCES produtos(id)
         )
     """)
 
+
+    # Atualização de produtos já cadastrados
+    colunas_produtos = [
+        coluna["name"]
+        for coluna in cursor.execute("PRAGMA table_info(produtos)").fetchall()
+    ]
+
+    if "codigo" not in colunas_produtos:
+        cursor.execute("ALTER TABLE produtos ADD COLUMN codigo TEXT")
+
+    if "estoque_minimo" not in colunas_produtos:
+        cursor.execute("""
+            ALTER TABLE produtos
+            ADD COLUMN estoque_minimo INTEGER DEFAULT 0
+        """)
     # Tabela de equipamentos
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS equipamentos (

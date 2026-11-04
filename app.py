@@ -578,6 +578,1166 @@ def editar_equipamento(id):
     """, equipamento=equipamento)
 
 # ==========================================
+# CADASTRO DE PRODUTOS
+# ==========================================
+
+
+
+@app.route("/produtos", methods=["GET", "POST"])
+def produtos():
+
+    conexao = conectar()
+
+    if request.method == "POST":
+
+        codigo = request.form["codigo"].strip()
+        nome = request.form["nome"].strip()
+        descricao = request.form["descricao"].strip()
+        categoria = request.form["categoria"].strip()
+        preco_venda = request.form["preco_venda"] or 0
+        quantidade_estoque = request.form["quantidade_estoque"] or 0
+        estoque_minimo = request.form["estoque_minimo"] or 0
+
+        try:
+            conexao.execute("""
+                INSERT INTO produtos (
+                    empresa_id, codigo, nome, descricao,
+                    categoria, preco_venda,
+                    quantidade_estoque, estoque_minimo
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                1, codigo, nome, descricao,
+                categoria, float(preco_venda),
+                int(quantidade_estoque), int(estoque_minimo)
+            ))
+
+            conexao.commit()
+            conexao.close()
+
+            return redirect(url_for("produtos"))
+
+        except Exception as erro:
+            conexao.close()
+            return f"Erro ao cadastrar produto: {erro}"
+
+    busca = request.args.get("busca", "").strip()
+    categoria_filtro = request.args.get("categoria", "").strip()
+
+    consulta = """
+        SELECT * FROM produtos
+        WHERE empresa_id = 1
+    """
+
+    parametros = []
+
+    if busca:
+        consulta += " AND (nome LIKE ? OR codigo LIKE ?)"
+        parametros.extend([f"%{busca}%", f"%{busca}%"])
+
+    if categoria_filtro:
+        consulta += " AND categoria = ?"
+        parametros.append(categoria_filtro)
+
+    consulta += " ORDER BY nome"
+
+    lista_produtos = conexao.execute(
+        consulta, parametros
+    ).fetchall()
+
+    categorias = conexao.execute("""
+        SELECT DISTINCT categoria
+        FROM produtos
+        WHERE empresa_id = 1
+        AND categoria IS NOT NULL
+        AND categoria != ''
+        ORDER BY categoria
+    """).fetchall()
+
+    conexao.close()
+
+    return render_template_string("""
+
+        <!DOCTYPE html>
+        <html lang="pt-br">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Produtos - SGF Industrial</title>
+
+            <style>
+                * {
+                    box-sizing: border-box;
+                }
+
+                body {
+                    font-family: Arial, sans-serif;
+                    background: #F1F4F9;
+                    margin: 0;
+                    padding: 30px;
+                    color: #263445;
+                }
+
+                .container {
+                    max-width: 1200px;
+                    margin: auto;
+                }
+
+                .topo {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 25px;
+                    flex-wrap: wrap;
+                    gap: 15px;
+                }
+
+                .topo h1 {
+                    color: #17365D;
+                    margin: 0 0 6px;
+                    font-size: 28px;
+                }
+
+                .subtitulo {
+                    color: #718096;
+                    margin: 0;
+                    font-size: 14px;
+                }
+
+                .voltar {
+                    background: white;
+                    color: #17365D;
+                    text-decoration: none;
+                    padding: 11px 17px;
+                    border-radius: 7px;
+                    border: 1px solid #DCE3EC;
+                    font-weight: bold;
+                }
+
+                .voltar:hover {
+                    background: #EAF0F7;
+                }
+
+                .card {
+                    background: white;
+                    padding: 25px;
+                    border-radius: 12px;
+                    box-shadow: 0 3px 12px rgba(20, 45, 75, 0.06);
+                    margin-bottom: 25px;
+                }
+
+                .card h2 {
+                    color: #17365D;
+                    margin: 0 0 8px;
+                    font-size: 20px;
+                }
+
+                .descricao-card {
+                    color: #718096;
+                    font-size: 13px;
+                    margin: 0 0 22px;
+                }
+
+                .form-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 18px;
+                }
+
+                .campo {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 7px;
+                }
+
+                .campo label {
+                    font-size: 13px;
+                    font-weight: bold;
+                    color: #46566A;
+                }
+
+                .campo input {
+                    width: 100%;
+                    padding: 12px;
+                    border: 1px solid #DCE3EC;
+                    border-radius: 7px;
+                    font-size: 14px;
+                    outline: none;
+                }
+
+                .campo input:focus {
+                    border-color: #2864A5;
+                    box-shadow: 0 0 0 3px rgba(40, 100, 165, 0.10);
+                }
+
+                .campo-completo {
+                    grid-column: 1 / -1;
+                }
+
+                .botao {
+                    margin-top: 22px;
+                    background: #17365D;
+                    color: white;
+                    padding: 13px 22px;
+                    border: none;
+                    border-radius: 7px;
+                    font-weight: bold;
+                    cursor: pointer;
+                    font-size: 14px;
+                }
+
+                .botao:hover {
+                    background: #245184;
+                }
+
+                .titulo-lista {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 20px;
+                    gap: 10px;
+                    flex-wrap: wrap;
+                }
+
+                .contador {
+                    background: #EAF0F7;
+                    color: #17365D;
+                    padding: 7px 12px;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    font-weight: bold;
+                }
+
+                .tabela-container {
+                    overflow-x: auto;
+                }
+
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    min-width: 700px;
+                }
+
+                th {
+    background: #EAF0F7;
+    color: #17365D;
+    text-align: left;
+    padding: 14px 12px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+                td {
+    padding: 16px 12px;
+    border-bottom: 1px solid #C5D2E0;
+    border-right: 1px solid #DCE4ED;
+    font-size: 13px;
+    vertical-align: middle;
+}
+
+                tbody tr:hover {
+                    background: #F8FAFD;
+                }
+
+                .nome-produto {
+                    color: #17365D;
+                    font-weight: bold;
+                    font-size: 14px;
+                }
+
+                .codigo {
+                    display: inline-block;
+                    background: #EEF3F9;
+                    color: #31577F;
+                    padding: 5px 9px;
+                    border-radius: 5px;
+                    font-size: 12px;
+                    font-weight: bold;
+                }
+
+                .preco {
+                    font-weight: bold;
+                    color: #263445;
+                }
+
+                .saldo {
+                    font-size: 15px;
+                    font-weight: bold;
+                    color: #263445;
+                }
+
+                .status {
+                    display: inline-block;
+                    padding: 7px 10px;
+                    border-radius: 20px;
+                    font-size: 11px;
+                    font-weight: bold;
+                    white-space: nowrap;
+                }
+
+                .status-normal {
+                    background: #E5F5EC;
+                    color: #237747;
+                }
+
+                .status-baixo {
+                    background: #FFF0E0;
+                    color: #B65B12;
+                }
+
+                .vazio {
+                    text-align: center;
+                    padding: 35px;
+                    color: #718096;
+                }
+
+                @media (max-width: 650px) {
+                    body {
+                        padding: 15px;
+                    }
+
+                    .form-grid {
+                        grid-template-columns: 1fr;
+                    }
+
+                    .campo-completo {
+                        grid-column: auto;
+                    }
+
+                    .card {
+                        padding: 18px;
+                    }
+
+                    .topo h1 {
+                        font-size: 23px;
+                    }
+                }
+            </style>
+        </head>
+
+        <body>
+            <div class="container">
+
+                <div class="topo">
+                    <div>
+                        <h1>📦 Gestão de Produtos</h1>
+                        <p class="subtitulo">
+                            Cadastro e controle de produtos do estoque
+                        </p>
+                    </div>
+
+                    <a class="voltar" href="/">
+                        ← Painel principal
+                    </a>
+                </div>
+
+                <div class="card">
+
+                    <h2>Adicionar novo produto</h2>
+
+                    <p class="descricao-card">
+                        Preencha as informações para cadastrar um produto.
+                    </p>
+
+                    <form method="POST">
+
+                        <div class="form-grid">
+
+                            <div class="campo">
+                                <label>Código do produto (SKU)</label>
+                                <input name="codigo" required
+                                       placeholder="Ex.: PROD002">
+                            </div>
+
+                            <div class="campo">
+                                <label>Nome do produto</label>
+                                <input name="nome" required
+                                       placeholder="Nome do produto">
+                            </div>
+
+                            <div class="campo">
+                                <label>Descrição</label>
+                                <input name="descricao"
+                                       placeholder="Descrição do produto">
+                            </div>
+
+                            <div class="campo">
+                                <label>Categoria</label>
+                                <input name="categoria"
+                                       placeholder="Ex.: Equipamentos">
+                            </div>
+
+                            <div class="campo">
+                                <label>Preço de venda (R$)</label>
+                                <input type="number" step="0.01" min="0"
+                                       name="preco_venda" value="0">
+                            </div>
+
+                            <div class="campo">
+                                <label>Quantidade inicial em estoque</label>
+                                <input type="number" min="0"
+                                       name="quantidade_estoque" value="0">
+                            </div>
+
+                            <div class="campo">
+                                <label>Estoque mínimo</label>
+                                <input type="number" min="0"
+                                       name="estoque_minimo" value="0">
+                            </div>
+
+                        </div>
+
+                        <button class="botao" type="submit">
+                            + Cadastrar produto
+                        </button>
+
+                    </form>
+
+                </div>
+
+                <div class="card">
+
+                    <div class="titulo-lista">
+                        <div>
+                       
+<h2>Produtos cadastrados</h2>
+
+<p class="descricao-card">
+    Consulte os produtos e a situação atual do estoque.
+</p>
+
+
+<form method="GET" action="/produtos" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:20px 0;">
+
+    <input
+        type="text"
+        name="busca"
+        placeholder="Buscar por nome ou código SKU"
+        value="{{ busca }}"
+        style="flex:2; min-width:220px; height:44px; padding:0 12px; border:1px solid #DCE3EC; border-radius:7px; font-size:14px;"
+    >
+
+    <select
+        name="categoria"
+        style="flex:1; min-width:180px; height:44px; padding:0 12px; border:1px solid #DCE3EC; border-radius:7px; font-size:14px;"
+    >
+        <option value="">Todas as categorias</option>
+
+        {% for item in categorias %}
+            <option value="{{ item['categoria'] }}"
+                {% if categoria_filtro == item['categoria'] %}selected{% endif %}>
+                {{ item['categoria'] }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <button type="submit" class="botao"
+        style="margin:0; height:44px; padding:0 22px; white-space:nowrap;">
+        Buscar
+    </button>
+
+    <a href="/produtos" class="voltar"
+        style="height:44px; padding:0 22px; display:flex; align-items:center; justify-content:center; white-space:nowrap;">
+        Limpar
+    </a>
+
+</form>
+
+</div>
+
+<span class="contador">
+    {{ lista_produtos|length }} produto(s)
+</span>
+</div>
+     
+                    </div>
+
+                    <div class="tabela-container">
+
+                      <table>
+    <thead>
+        <tr>
+            <th style="background-color: #DCE6F1 !important; color: #17365D;">Produto</th>
+            <th style="background-color: #DCE6F1 !important; color: #17365D;">Código SKU</th>
+            <th style="background-color: #DCE6F1 !important; color: #17365D;">Categoria</th>
+            <th style="background-color: #DCE6F1 !important; color: #17365D;">Preço</th>
+            <th style="background-color: #DCE6F1 !important; color: #17365D;">Estoque</th>
+            <th style="background-color: #DCE6F1 !important; color: #17365D;">Situação</th>
+        </tr>
+    </thead>  
+
+                            <tbody>
+
+                               {% for produto in lista_produtos %}
+<tr style="background-color: #E2EAF3;"> 
+                                    <td>
+                                        <span class="nome-produto">
+                                            {{ produto["nome"] }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="codigo">
+                                            {{ produto["codigo"] or "Sem código" }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        {{ produto["categoria"] or "Não informada" }}
+                                    </td>
+
+                                    <td class="preco">
+                                        R$ {{ "%.2f"|format(produto["preco_venda"] or 0) }}
+                                    </td>
+
+                                    <td>
+                                        <span class="saldo">
+                                            {{ produto["quantidade_estoque"] }}
+                                        </span>
+                                        <br>
+                                        <small>
+                                            Mínimo: {{ produto["estoque_minimo"] }}
+                                        </small>
+                                    </td>
+
+                                    <td>
+                                        {% if produto["quantidade_estoque"] <= produto["estoque_minimo"] %}
+                                            <span class="status status-baixo">
+                                                ⚠ Estoque baixo
+                                            </span>
+                                        {% else %}
+                                            <span class="status status-normal">
+                                                ✓ Estoque normal
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="vazio">
+                                        Nenhum produto cadastrado ainda.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+
+                            </tbody>
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </body>
+        </html>
+    """,
+        lista_produtos=lista_produtos,
+        busca=busca,
+        categorias=categorias,
+        categoria_filtro=categoria_filtro
+    )
+
+        
+
+# ==========================================
+# MOVIMENTAÇÕES DE ESTOQUE
+# ==========================================
+
+
+@app.route("/movimentacoes-estoque", methods=["GET", "POST"])
+def movimentacoes_estoque():
+
+    conexao = conectar()
+
+    if request.method == "POST":
+
+        produto_id = request.form["produto_id"]
+        tipo = request.form["tipo"]
+        quantidade = request.form["quantidade"]
+        motivo = request.form["motivo"].strip()
+
+        if tipo not in ("Entrada", "Saída"):
+            conexao.close()
+            return "Tipo de movimentação inválido."
+
+        try:
+            quantidade = int(quantidade)
+
+            if quantidade <= 0:
+                conexao.close()
+                return "A quantidade deve ser maior que zero."
+
+            produto = conexao.execute("""
+                SELECT * FROM produtos
+                WHERE id = ? AND empresa_id = 1
+            """, (produto_id,)).fetchone()
+
+            if produto is None:
+                conexao.close()
+                return "Produto não encontrado."
+
+            saldo_atual = produto["quantidade_estoque"]
+
+            if tipo == "Saída" and quantidade > saldo_atual:
+                conexao.close()
+                return (
+                    f"Estoque insuficiente! "
+                    f"Disponível: {saldo_atual} unidade(s)."
+                )
+
+            if tipo == "Entrada":
+                conexao.execute("""
+                    UPDATE produtos
+                    SET quantidade_estoque = quantidade_estoque + ?
+                    WHERE id = ? AND empresa_id = 1
+                """, (quantidade, produto_id))
+
+            else:
+                conexao.execute("""
+                    UPDATE produtos
+                    SET quantidade_estoque = quantidade_estoque - ?
+                    WHERE id = ?
+                    AND empresa_id = 1
+                    AND quantidade_estoque >= ?
+                """, (quantidade, produto_id, quantidade))
+
+                if conexao.execute("SELECT changes()").fetchone()[0] == 0:
+                    conexao.rollback()
+                    conexao.close()
+                    return "Estoque insuficiente para essa saída."
+
+            conexao.execute("""
+                INSERT INTO movimentacoes_estoque (
+                    empresa_id, produto_id, tipo,
+                    quantidade, motivo, data_movimentacao
+                )
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (
+                1,
+                produto_id,
+                tipo,
+                quantidade,
+                motivo,
+                date.today().isoformat()
+            ))
+
+            conexao.commit()
+            conexao.close()
+
+            return redirect(url_for("movimentacoes_estoque"))
+
+        except ValueError:
+            conexao.close()
+            return "Informe uma quantidade inteira válida."
+
+        except Exception as erro:
+            conexao.rollback()
+            conexao.close()
+            return f"Erro na movimentação: {erro}"
+
+    lista_produtos = conexao.execute("""
+        SELECT * FROM produtos
+        WHERE empresa_id = 1
+        ORDER BY nome
+    """).fetchall()
+
+    historico = conexao.execute("""
+        SELECT movimentacoes_estoque.*,
+               produtos.nome AS produto_nome,
+               produtos.codigo AS produto_codigo
+        FROM movimentacoes_estoque
+        JOIN produtos
+            ON produtos.id = movimentacoes_estoque.produto_id
+        WHERE movimentacoes_estoque.empresa_id = 1
+        ORDER BY movimentacoes_estoque.id DESC
+    """).fetchall()
+
+    conexao.close()
+
+    return render_template_string("""
+        <!DOCTYPE html>
+        <html lang="pt-br">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Movimentações - SGF Industrial</title>
+
+            <style>
+                * {
+                    box-sizing: border-box;
+                }
+
+                body {
+                    font-family: Arial, sans-serif;
+                    background: #F1F4F9;
+                    margin: 0;
+                    padding: 30px;
+                    color: #263445;
+                }
+
+                .container {
+                    max-width: 1200px;
+                    margin: auto;
+                }
+
+                .topo {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    gap: 15px;
+                    margin-bottom: 25px;
+                }
+
+                .topo h1 {
+                    color: #17365D;
+                    margin: 0 0 6px;
+                    font-size: 28px;
+                }
+
+                .subtitulo {
+                    color: #718096;
+                    margin: 0;
+                    font-size: 14px;
+                }
+
+                .voltar {
+                    background: white;
+                    color: #17365D;
+                    text-decoration: none;
+                    padding: 11px 17px;
+                    border-radius: 7px;
+                    border: 1px solid #DCE3EC;
+                    font-weight: bold;
+                }
+
+                .voltar:hover {
+                    background: #EAF0F7;
+                }
+
+                .card {
+                    background: white;
+                    padding: 25px;
+                    border-radius: 12px;
+                    box-shadow: 0 3px 12px rgba(20, 45, 75, 0.06);
+                    margin-bottom: 25px;
+                }
+
+                .card h2 {
+                    color: #17365D;
+                    margin: 0 0 8px;
+                    font-size: 20px;
+                }
+
+                .descricao-card {
+                    color: #718096;
+                    font-size: 13px;
+                    margin: 0 0 22px;
+                }
+
+                .form-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 18px;
+                }
+
+                .campo {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 7px;
+                }
+
+                .campo label {
+                    font-size: 13px;
+                    font-weight: bold;
+                    color: #46566A;
+                }
+
+                .campo input,
+                .campo select {
+                    width: 100%;
+                    padding: 12px;
+                    border: 1px solid #DCE3EC;
+                    border-radius: 7px;
+                    font-size: 14px;
+                    background: white;
+                    outline: none;
+                }
+
+                .campo input:focus,
+                .campo select:focus {
+                    border-color: #2864A5;
+                    box-shadow: 0 0 0 3px rgba(40, 100, 165, 0.10);
+                }
+
+                .campo-completo {
+                    grid-column: 1 / -1;
+                }
+
+                .botao {
+                    margin-top: 22px;
+                    background: #17365D;
+                    color: white;
+                    padding: 13px 22px;
+                    border: none;
+                    border-radius: 7px;
+                    font-weight: bold;
+                    cursor: pointer;
+                    font-size: 14px;
+                }
+
+                .botao:hover {
+                    background: #245184;
+                }
+
+                .titulo-lista {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    gap: 10px;
+                    margin-bottom: 20px;
+                }
+
+                .contador {
+                    background: #EAF0F7;
+                    color: #17365D;
+                    padding: 7px 12px;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    font-weight: bold;
+                }
+
+                .tabela-container {
+                    overflow-x: auto;
+                }
+
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    min-width: 700px;
+                }
+
+               th {
+    background: #EAF0F7 !important;
+    color: #17365D;
+    text-align: left;
+    padding: 14px 12px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+               td {
+    padding: 16px 12px;
+    border-bottom: 1px solid #D5DFEA;
+    border-right: 1px solid #E1E8F0;
+    font-size: 13px;
+    vertical-align: middle;
+}
+
+tbody tr:hover {
+    background-color: #DCE8F5 !important;
+}
+                tbody tr:hover {
+                    background: #F8FAFD;
+                }
+
+                .nome-produto {
+                    color: #17365D;
+                    font-weight: bold;
+                    font-size: 14px;
+                }
+
+                .codigo {
+                    display: inline-block;
+                    background: #EEF3F9;
+                    color: #31577F;
+                    padding: 5px 9px;
+                    border-radius: 5px;
+                    font-size: 12px;
+                    font-weight: bold;
+                }
+
+                .tipo {
+                    display: inline-block;
+                    padding: 7px 11px;
+                    border-radius: 20px;
+                    font-size: 11px;
+                    font-weight: bold;
+                }
+
+                .entrada {
+                    background: #E5F5EC;
+                    color: #237747;
+                }
+
+                .saida {
+                    background: #FCE8E8;
+                    color: #B42318;
+                }
+
+                .quantidade {
+                    font-weight: bold;
+                    font-size: 14px;
+                }
+
+                .data {
+                    color: #536477;
+                    white-space: nowrap;
+                }
+
+                .vazio {
+                    text-align: center;
+                    padding: 35px;
+                    color: #718096;
+                }
+
+                @media (max-width: 650px) {
+                    body {
+                        padding: 15px;
+                    }
+
+                    .form-grid {
+                        grid-template-columns: 1fr;
+                    }
+
+                    .campo-completo {
+                        grid-column: auto;
+                    }
+
+                    .card {
+                        padding: 18px;
+                    }
+
+                    .topo h1 {
+                        font-size: 23px;
+                    }
+                }
+            </style>
+        </head>
+
+        <body>
+            <div class="container">
+
+                <div class="topo">
+                    <div>
+                        <h1>📊 Movimentações de Estoque</h1>
+                        <p class="subtitulo">
+                            Controle de entradas, saídas e histórico de produtos
+                        </p>
+                    </div>
+
+                    <a class="voltar" href="/">
+                        ← Painel principal
+                    </a>
+                </div>
+
+                <div class="card">
+
+                    <h2>Registrar movimentação</h2>
+
+                    <p class="descricao-card">
+                        Informe o produto, o tipo e a quantidade movimentada.
+                    </p>
+                    <button type="submit" class="botao" style="margin-top:0; height:43px;">
+    Buscar
+</button>
+
+<a href="/produtos" class="voltar"
+   style="height:44px; padding:0 22px; display:flex; align-items:center; justify-content:center; white-space:nowrap; background:#DCE7F3; color:#17365D; border:1px solid #B8CBE0;">
+    Limpar
+</a>
+
+    <input
+        type="text"
+        name="busca"
+        placeholder="Buscar por nome ou código SKU"
+        value="{{ busca }}"
+        style="flex:2; min-width:220px; padding:12px; border:1px solid #ddd; border-radius:8px;"
+    >
+
+    <select
+        name="categoria"
+        style="flex:1; min-width:180px; padding:12px; border:1px solid #ddd; border-radius:8px;"
+    >
+        <option value="">Todas as categorias</option>
+
+        {% for item in categorias %}
+            <option value="{{ item['categoria'] }}"
+                {% if categoria_filtro == item['categoria'] %}selected{% endif %}>
+                {{ item['categoria'] }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <button type="submit" class="botao">
+        Buscar
+    </button>
+
+    <a href="/produtos" class="botao">
+        Limpar
+    </a>
+
+</form>
+
+                    <form method="POST">
+
+                        <div class="form-grid">
+
+                            <div class="campo campo-completo">
+                                <label>Produto</label>
+
+                                <select name="produto_id" required>
+                                    <option value="">Selecione um produto</option>
+
+                                    {% for produto in lista_produtos %}
+                                        <option value="{{ produto['id'] }}">
+                                            {{ produto['codigo'] }} - {{ produto['nome'] }}
+                                            (Estoque: {{ produto['quantidade_estoque'] }})
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="campo">
+                                <label>Tipo de movimentação</label>
+
+                                <select name="tipo" required>
+                                    <option value="Entrada">Entrada</option>
+                                    <option value="Saída">Saída</option>
+                                </select>
+                            </div>
+
+                            <div class="campo">
+                                <label>Quantidade</label>
+
+                                <input type="number" name="quantidade"
+                                       min="1" step="1" required
+                                       placeholder="Informe a quantidade">
+                            </div>
+
+                            <div class="campo campo-completo">
+                                <label>Motivo da movimentação</label>
+
+                                <input name="motivo"
+                                       placeholder="Ex.: Compra, venda ou consumo interno">
+                            </div>
+
+                        </div>
+
+                        <button class="botao" type="submit">
+                            Registrar movimentação
+                        </button>
+
+                    </form>
+
+                </div>
+
+                <div class="card">
+
+                    <div class="titulo-lista">
+                        <div>
+                            <h2>Histórico de movimentações</h2>
+                            <p class="descricao-card">
+                                Acompanhe todas as entradas e saídas registradas.
+                            </p>
+                        </div>
+
+                        <span class="contador">
+                            {{ historico|length }} movimentação(ões)
+                        </span>
+                    </div>
+
+                    <div class="tabela-container">
+
+                      <table class="tabela-produtos"> 
+    <thead>
+        <tr style="background-color: #DCE6F1;">
+            <th style="background-color: #DCE6F1;">Produto</th>
+                                    <th>Código SKU</th>
+                                    <th>Tipo</th>
+                                    <th>Quantidade</th>
+                                    <th>Motivo</th>
+                                    <th>Data</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                {% for movimento in historico %}
+                                <tr>
+                                    <td>
+                                        <span class="nome-produto">
+                                            {{ movimento['produto_nome'] }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="codigo">
+                                            {{ movimento['produto_codigo'] }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        {% if movimento['tipo'] == 'Entrada' %}
+                                            <span class="tipo entrada">
+                                                ↑ Entrada
+                                            </span>
+                                        {% else %}
+                                            <span class="tipo saida">
+                                                ↓ Saída
+                                            </span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td class="quantidade">
+                                        {{ movimento['quantidade'] }} un.
+                                    </td>
+
+                                    <td>
+                                        {{ movimento['motivo'] or 'Não informado' }}
+                                    </td>
+
+                                    <td class="data">
+                                        {{ movimento['data_movimentacao'][8:10] }}/{{ movimento['data_movimentacao'][5:7] }}/{{ movimento['data_movimentacao'][0:4] }}
+                                    </td>
+                                </tr>
+
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="vazio">
+                                        Nenhuma movimentação registrada ainda.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+
+                            </tbody>
+                        </table>
+
+                    </div>
+
+                </div>
+
+                <p>
+                    <a class="voltar" href="/produtos">
+                        📦 Consultar produtos
+                    </a>
+                </p>
+
+            </div>
+        </body>
+        </html>
+    """,
+        lista_produtos=lista_produtos,
+        busca=busca,
+        categorias=categorias,
+        categoria_filtro=categoria_filtro
+    )
+
+
+# ==========================================
 # PAINEL PRINCIPAL
 # ==========================================
 
@@ -585,6 +1745,13 @@ def editar_equipamento(id):
 def inicio():
 
     conexao = conectar()
+    produtos_estoque_baixo = conexao.execute("""
+        SELECT codigo, nome, quantidade_estoque, estoque_minimo
+        FROM produtos
+        WHERE empresa_id = 1
+        AND quantidade_estoque <= estoque_minimo
+        ORDER BY quantidade_estoque ASC
+    """).fetchall()
 
     mes_atual = __import__('datetime').date.today().strftime('%Y-%m')
 
@@ -887,11 +2054,13 @@ def inicio():
                 </div>
 
                 <nav class="menu">
-                    <a href="/">▦ Visão geral</a>
-                    <a href="/clientes">👥 Clientes</a>
-                    <a href="/equipamentos">🔧 Equipamentos</a>
-                    <a href="/fluxo-caixa">💰 Fluxo de caixa</a>
-                    <a href="/contas-pagar">📤 Contas a pagar</a>
+    <a href="/">▦ Visão geral</a>
+    <a href="/clientes">👥 Clientes</a>
+    <a href="/equipamentos">🔧 Equipamentos</a>
+    <a href="/produtos">📦 Produtos</a>
+    <a href="/movimentacoes-estoque">📊 Movimentações de estoque</a>
+    <a href="/fluxo-caixa">💰 Fluxo de caixa</a>
+    <a href="/contas-pagar">📤 Contas a pagar</a>
 <a href="/contas-receber">📥 Contas a receber</a>
 <a href="/fechamento-mensal">📅 Fechamento mensal</a>
 <a href="/fechamento-anual">📊 Fechamento anual</a>
@@ -1041,7 +2210,42 @@ def inicio():
     </a>
 
 </section>
+<section class="card">
+    <h2>⚠️ Alertas de Estoque</h2>
 
+    {% if produtos_estoque_baixo %}
+        <p>Os seguintes produtos precisam de reposição:</p>
+
+     <table style="width:100%; border-collapse:collapse; margin-top:15px;">
+    <thead>
+        <tr>
+            <th style="padding:14px 20px; text-align:left; background:#f1f5f9; border-bottom:1px solid #ddd;">Produto</th>
+            <th style="padding:14px 20px; text-align:left; background:#f1f5f9; border-bottom:1px solid #ddd;">Código</th>
+            <th style="padding:14px 20px; text-align:center; background:#f1f5f9; border-bottom:1px solid #ddd;">Estoque atual</th>
+            <th style="padding:14px 20px; text-align:center; background:#f1f5f9; border-bottom:1px solid #ddd;">Estoque mínimo</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for produto in produtos_estoque_baixo %}
+        <tr>
+            <td style="padding:14px 20px; border-bottom:1px solid #e5e7eb;">{{ produto['nome'] }}</td>
+            <td style="padding:14px 20px; border-bottom:1px solid #e5e7eb;">{{ produto['codigo'] }}</td>
+            <td style="padding:14px 20px; text-align:center; border-bottom:1px solid #e5e7eb;">{{ produto['quantidade_estoque'] }}</td>
+            <td style="padding:14px 20px; text-align:center; border-bottom:1px solid #e5e7eb;">{{ produto['estoque_minimo'] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>   
+
+    {% else %}
+        <p>✅ Nenhum produto precisa de reposição no momento.</p>
+    {% endif %}
+
+    <a class="botao" href="/produtos">
+        Consultar produtos
+    </a>
+</section>
             </main>
         """,
         saldo_caixa=saldo_caixa,
@@ -1051,7 +2255,8 @@ def inicio():
         total_a_pagar=total_a_pagar,
         meses_financeiros=meses_financeiros,
         maior_movimento=maior_movimento,
-        maior_resultado=maior_resultado
+        maior_resultado=maior_resultado,
+        produtos_estoque_baixo=produtos_estoque_baixo
     )  
 
 
@@ -1351,6 +2556,27 @@ def contas_receber():
                 border-collapse: collapse;
                 min-width: 750px;
             }
+            .tabela-produtos {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 750px;
+    border: 1px solid #B8C8D9;
+}
+
+.tabela-produtos th {
+    background-color: #DCE6F1;
+    color: #17365D;
+    border: 1px solid #B8C8D9;
+    padding: 14px 12px;
+}
+
+.tabela-produtos td {
+    background-color: #F4F7FB;
+    border: 1px solid #D5DFEA;
+    padding: 16px 12px;
+    font-size: 13px;
+    vertical-align: middle;
+}
 
             th {
                 background: #e7edf5;
@@ -1734,6 +2960,28 @@ def contas_pagar():
                     grid-column: auto;
                 }
             }
+          .tabela-alertas {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.tabela-alertas th,
+.tabela-alertas td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.tabela-alertas th {
+    background-color: #f1f5f9;
+    color: #1e293b;
+    font-weight: bold;
+}
+
+.tabela-alertas td {
+    color: #334155;
+}  
         </style>
     </head>
 
