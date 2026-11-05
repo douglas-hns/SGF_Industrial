@@ -1541,46 +1541,7 @@ tbody tr:hover {
                     <p class="descricao-card">
                         Informe o produto, o tipo e a quantidade movimentada.
                     </p>
-                    <button type="submit" class="botao" style="margin-top:0; height:43px;">
-    Buscar
-</button>
-
-<a href="/produtos" class="voltar"
-   style="height:44px; padding:0 22px; display:flex; align-items:center; justify-content:center; white-space:nowrap; background:#DCE7F3; color:#17365D; border:1px solid #B8CBE0;">
-    Limpar
-</a>
-
-    <input
-        type="text"
-        name="busca"
-        placeholder="Buscar por nome ou código SKU"
-        value="{{ busca }}"
-        style="flex:2; min-width:220px; padding:12px; border:1px solid #ddd; border-radius:8px;"
-    >
-
-    <select
-        name="categoria"
-        style="flex:1; min-width:180px; padding:12px; border:1px solid #ddd; border-radius:8px;"
-    >
-        <option value="">Todas as categorias</option>
-
-        {% for item in categorias %}
-            <option value="{{ item['categoria'] }}"
-                {% if categoria_filtro == item['categoria'] %}selected{% endif %}>
-                {{ item['categoria'] }}
-            </option>
-        {% endfor %}
-    </select>
-
-    <button type="submit" class="botao">
-        Buscar
-    </button>
-
-    <a href="/produtos" class="botao">
-        Limpar
-    </a>
-
-</form>
+          
 
                     <form method="POST">
 
@@ -1731,9 +1692,7 @@ tbody tr:hover {
         </html>
     """,
         lista_produtos=lista_produtos,
-        busca=busca,
-        categorias=categorias,
-        categoria_filtro=categoria_filtro
+        
     )
 
 
