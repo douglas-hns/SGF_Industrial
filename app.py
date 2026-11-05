@@ -1514,21 +1514,21 @@ def produtos():
                     <div class="tabela-container">
 
                       <table>
-    <thead>
-        <tr>
-            <th style="background-color: #DCE6F1 !important; color: #17365D;">Produto</th>
-            <th style="background-color: #DCE6F1 !important; color: #17365D;">Código SKU</th>
-            <th style="background-color: #DCE6F1 !important; color: #17365D;">Categoria</th>
-            <th style="background-color: #DCE6F1 !important; color: #17365D;">Preço</th>
-            <th style="background-color: #DCE6F1 !important; color: #17365D;">Estoque</th>
-            <th style="background-color: #DCE6F1 !important; color: #17365D;">Situação</th>
-        </tr>
-    </thead>  
+      <thead>
+    <tr>
+        <th style="background-color: #C5D5E8; color: #17365D;">Produto</th>
+        <th style="background-color: #C5D5E8; color: #17365D;">Código SKU</th>
+        <th style="background-color: #C5D5E8; color: #17365D;">Categoria</th>
+        <th style="background-color: #C5D5E8; color: #17365D;">Preço</th>
+        <th style="background-color: #C5D5E8; color: #17365D;">Estoque</th>
+        <th style="background-color: #C5D5E8; color: #17365D;">Situação</th>
+    </tr>
+</thead>
 
                             <tbody>
 
                                {% for produto in lista_produtos %}
-<tr style="background-color: #E2EAF3;"> 
+<tr style="background-color: #F4F7FB;">
                                     <td>
                                         <span class="nome-produto">
                                             {{ produto["nome"] }}
