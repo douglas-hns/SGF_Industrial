@@ -54,109 +54,355 @@ def clientes():
             <meta charset="UTF-8">
             <title>Clientes - SGF Industrial</title>
             <style>
-                body {
-                    font-family: Arial, sans-serif;
-                    background: #F2F5F9;
-                    color: #26364A;
-                    padding: 30px;
-                }
+    * {
+        box-sizing: border-box;
+    }
 
-                .container {
-                    max-width: 900px;
-                    margin: auto;
-                    background: white;
-                    padding: 30px;
-                    border-radius: 12px;
-                }
+    body {
+        font-family: Arial, sans-serif;
+        background: #F1F4F9;
+        color: #263445;
+        margin: 0;
+        padding: 30px;
+    }
 
-                input {
-                    display: block;
-                    width: 100%;
-                    padding: 10px;
-                    margin: 8px 0 15px;
-                    border: 1px solid #CBD5E0;
-                    border-radius: 6px;
-                    box-sizing: border-box;
-                }
+    .container {
+        max-width: 1200px;
+        margin: auto;
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 3px 12px rgba(20, 45, 75, 0.06);
+    }
 
-                button {
-                    background: #2474B8;
-                    color: white;
-                    border: none;
-                    padding: 12px 20px;
-                    border-radius: 6px;
-                    cursor: pointer;
-                }
+    h1 {
+        color: #17365D;
+        margin: 0 0 25px;
+        font-size: 28px;
+    }
 
-                .cliente {
-                    padding: 15px;
-                    border-bottom: 1px solid #E2E8F0;
-                }
+    h2 {
+        color: #17365D;
+        margin: 0 0 20px;
+        font-size: 20px;
+    }
 
-                a {
-                    color: #2474B8;
-                    text-decoration: none;
-                }
-            </style>
+    label {
+        font-size: 13px;
+        font-weight: bold;
+        color: #46566A;
+    }
+
+    input {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        margin: 7px 0 18px;
+        border: 1px solid #DCE3EC;
+        border-radius: 7px;
+        font-size: 14px;
+    }
+
+    input:focus {
+        outline: none;
+        border-color: #2864A5;
+        box-shadow: 0 0 0 3px rgba(40, 100, 165, 0.10);
+    }
+
+    button {
+        background: #17365D;
+        color: white;
+        padding: 13px 22px;
+        border: none;
+        border-radius: 7px;
+        font-weight: bold;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    button:hover {
+        background: #245184;
+    }
+
+    hr {
+        border: 0;
+        border-top: 1px solid #DCE3EC;
+        margin: 30px 0;
+    }
+
+    .cliente {
+        background: #E2EAF3;
+        padding: 18px;
+        margin-bottom: 12px;
+        border: 1px solid #C5D2E0;
+        border-radius: 7px;
+        font-size: 14px;
+        line-height: 1.8;
+        overflow-wrap: anywhere;
+    }
+
+    .cliente strong {
+        color: #17365D;
+        font-size: 16px;
+    }
+
+    a {
+        color: #17365D;
+        font-weight: bold;
+        text-decoration: none;
+    }
+
+    a:hover {
+        text-decoration: underline;
+    }
+
+    .cliente a {
+        display: inline-block;
+        margin: 10px 12px 0 0;
+    }
+
+    @media (max-width: 650px) {
+        body {
+            padding: 15px;
+        }
+
+        .container {
+            padding: 18px;
+        }
+
+        h1 {
+            font-size: 23px;
+        }
+    }
+</style>
         </head>
 
         <body>
             <div class="container">
 
-                <h1>Cadastro de clientes</h1>
+               <style>
+    .form-clientes {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+    }
 
-                <form method="POST">
+    .campo-cliente {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+    }
 
-                    <label>Nome do cliente</label>
-                    <input name="nome" required>
+    .campo-cliente input {
+        margin: 0;
+    }
 
-                    <label>CPF/CNPJ</label>
-                    <input name="documento">
+    .campo-inteiro {
+        grid-column: 1 / -1;
+    }
 
-                    <label>Telefone</label>
-                    <input name="telefone">
+    .descricao-clientes {
+        color: #718096;
+        font-size: 13px;
+        margin: 0 0 22px;
+    }
 
-                    <label>E-mail</label>
-                    <input name="email" type="email">
+    .acoes-cadastro {
+        margin-top: 22px;
+    }
 
-                    <label>Endereço</label>
-                    <input name="endereco">
+    @media (max-width: 650px) {
+        .form-clientes {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
 
-                    <button type="submit">Salvar cliente</button>
+<h1>Gestão de Clientes</h1>
 
-                </form>
+<h2>Adicionar novo cliente</h2>
+<p class="descricao-clientes">
+    Preencha as informações para cadastrar um cliente.
+</p>
 
+<form method="POST">
+    <div class="form-clientes">
+        <div class="campo-cliente">
+            <label for="cliente-nome">Nome do cliente</label>
+            <input id="cliente-nome" name="nome" required>
+        </div>
+
+        <div class="campo-cliente">
+            <label for="cliente-documento">CPF/CNPJ</label>
+            <input id="cliente-documento" name="documento">
+        </div>
+
+        <div class="campo-cliente">
+            <label for="cliente-telefone">Telefone</label>
+            <input id="cliente-telefone" name="telefone">
+        </div>
+
+        <div class="campo-cliente">
+            <label for="cliente-email">E-mail</label>
+            <input id="cliente-email" name="email" type="email">
+        </div>
+
+        <div class="campo-cliente campo-inteiro">
+            <label for="cliente-endereco">Endereço</label>
+            <input id="cliente-endereco" name="endereco">
+        </div>
+    </div>
+
+    <div class="acoes-cadastro">
+        <button type="submit">Salvar cliente</button>
+    </div>
+</form> 
                 <hr>
 
-                <h2>Clientes cadastrados</h2>
+              <style>
+    .tabela-clientes-container {
+        overflow-x: auto;
+    }
 
-                {% for cliente in lista_clientes %}
-                    <div class="cliente">
-                        <strong>{{ cliente["nome"] }}</strong><br>
-                        Telefone: {{ cliente["telefone"] or "Não informado" }}<br>
-                        CPF/CNPJ: {{ cliente["documento"] or "Não informado" }}<br>
-                       <a href="{{ url_for('editar_cliente', id=cliente['id']) }}">
-    Editar
-</a>
+    .tabela-clientes {
+        width: 100%;
+        min-width: 650px;
+        border-collapse: collapse;
+    }
 
-<form method="POST"
-      action="{{ url_for('excluir_cliente', id=cliente['id']) }}"
-      onsubmit="return confirm('Tem certeza que deseja excluir este cliente?');"
-      style="display: inline;">
+    .tabela-clientes th {
+        background: #C5D5E8;
+        color: #17365D;
+        text-align: left;
+        padding: 14px 12px;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
 
-    <button type="submit"
-            style="background: #DC3545; color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer;">
-        Excluir
-    </button>
+    .tabela-clientes td {
+        background: #F4F7FB;
+        padding: 16px 12px;
+        border-bottom: 1px solid #C5D2E0;
+        border-right: 1px solid #DCE4ED;
+        font-size: 13px;
+        overflow-wrap: anywhere;
+    }
 
-</form>
-                    </div>
-                {% else %}
-                    <p>Nenhum cliente cadastrado.</p>
-                {% endfor %}
+    .tabela-clientes tbody tr:hover td {
+        background: #F8FAFD;
+    }
+
+    .nome-cliente {
+        color: #17365D;
+        font-weight: bold;
+    }
+
+    .acoes-cliente {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .acoes-cliente form {
+        margin: 0;
+    }
+
+    .editar-cliente,
+    .excluir-cliente {
+        display: inline-block;
+        padding: 8px 12px;
+        border-radius: 7px;
+        font-size: 13px;
+        font-weight: bold;
+        white-space: nowrap;
+    }
+
+    .editar-cliente {
+        background: white;
+        color: #17365D;
+        border: 1px solid #DCE3EC;
+        text-decoration: none;
+    }
+
+    .editar-cliente:hover {
+        background: #EAF0F7;
+    }
+
+    .excluir-cliente {
+        background: #DC3545;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+
+    .excluir-cliente:hover {
+        background: #B02A37;
+    }
+
+    .tabela-clientes .lista-vazia {
+        text-align: center;
+        padding: 35px;
+        color: #718096;
+        background: white;
+    }
+</style>
+
+<h2>Clientes cadastrados</h2>
+
+<div class="tabela-clientes-container">
+    <table class="tabela-clientes">
+        <thead>
+            <tr>
+                <th scope="col">Nome do cliente</th>
+                <th scope="col">CPF/CNPJ</th>
+                <th scope="col">Telefone</th>
+                <th scope="col">Ações</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for cliente in lista_clientes %}
+                <tr>
+                    <td class="nome-cliente">
+                        {{ cliente["nome"] }}
+                    </td>
+                    <td>
+                        {{ cliente["documento"] or "Não informado" }}
+                    </td>
+                    <td>
+                        {{ cliente["telefone"] or "Não informado" }}
+                    </td>
+                    <td>
+                        <div class="acoes-cliente">
+                            <a class="editar-cliente"
+                               href="{{ url_for('editar_cliente', id=cliente['id']) }}">
+                                Editar
+                            </a>
+
+                            <form method="POST"
+                                  action="{{ url_for('excluir_cliente', id=cliente['id']) }}"
+                                  onsubmit="return confirm('Tem certeza que deseja excluir este cliente?');">
+                                <button class="excluir-cliente" type="submit">
+                                    Excluir
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="4" class="lista-vazia">
+                        Nenhum cliente cadastrado.
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>  
 
                 <p><a href="/">Voltar ao painel</a></p>
-
+<h2
             </div>
         </body>
         </html>
@@ -226,42 +472,254 @@ def editar_cliente(id):
 
     return render_template_string("""
         <!DOCTYPE html>
-        <html lang="pt-br">
-        <head>
-            <meta charset="UTF-8">
-            <title>Editar cliente - SGF Industrial</title>
-        </head>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar cliente - SGF Industrial</title>
 
-        <body style="font-family: Arial; background: #F2F5F9; padding: 30px;">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
 
-            <h1>Editar cliente</h1>
+        body {
+            font-family: Arial, sans-serif;
+            background: #F1F4F9;
+            color: #263445;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        .topo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            color: #17365D;
+            font-size: 28px;
+            margin: 0 0 8px;
+        }
+
+        .subtitulo {
+            color: #718096;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .voltar,
+        .cancelar {
+            display: inline-block;
+            background: white;
+            color: #17365D;
+            border: 1px solid #DCE3EC;
+            border-radius: 7px;
+            padding: 12px 18px;
+            font-size: 14px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .voltar:hover,
+        .cancelar:hover {
+            background: #EAF0F7;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(20, 45, 75, 0.06);
+            overflow: hidden;
+        }
+
+        .cabecalho-card {
+            background: #C5D5E8;
+            padding: 22px 25px;
+            border-bottom: 1px solid #B8CBE0;
+        }
+
+        .cabecalho-card h2 {
+            color: #17365D;
+            font-size: 20px;
+            margin: 0 0 6px;
+            overflow-wrap: anywhere;
+        }
+
+        .cabecalho-card p {
+            color: #46566A;
+            font-size: 13px;
+            margin: 0;
+        }
+
+        form {
+            padding: 25px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .campo {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            color: #46566A;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            background: #F4F7FB;
+            color: #263445;
+            border: 1px solid #DCE3EC;
+            border-radius: 7px;
+            padding: 12px;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        input:focus {
+            outline: none;
+            background: white;
+            border-color: #2864A5;
+            box-shadow: 0 0 0 3px rgba(40, 100, 165, 0.10);
+        }
+
+        .campo-completo {
+            grid-column: 1 / -1;
+        }
+
+        .acoes {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 28px;
+            padding-top: 22px;
+            border-top: 1px solid #DCE3EC;
+        }
+
+        .salvar {
+            background: #17365D;
+            color: white;
+            border: none;
+            border-radius: 7px;
+            padding: 13px 22px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .salvar:hover {
+            background: #245184;
+        }
+
+        @media (max-width: 650px) {
+            body {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 23px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            form,
+            .cabecalho-card {
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="topo">
+            <div>
+                <h1>Editar cliente</h1>
+                <p class="subtitulo">
+                    Atualize as informações do cadastro.
+                </p>
+            </div>
+
+            <a class="voltar" href="{{ url_for('clientes') }}">
+                ← Voltar aos clientes
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="cabecalho-card">
+                <h2>{{ cliente['nome'] }}</h2>
+                <p>Confira os dados antes de salvar as alterações.</p>
+            </div>
 
             <form method="POST">
+                <div class="form-grid">
+                    <div class="campo">
+                        <label for="nome">Nome do cliente (obrigatório)</label>
+                        <input id="nome" name="nome"
+                               value="{{ cliente['nome'] }}" required>
+                    </div>
 
-                <p>Nome:</p>
-                <input name="nome" value="{{ cliente['nome'] }}" required>
+                    <div class="campo">
+                        <label for="documento">CPF/CNPJ</label>
+                        <input id="documento" name="documento"
+                               value="{{ cliente['documento'] or '' }}">
+                    </div>
 
-                <p>CPF/CNPJ:</p>
-                <input name="documento" value="{{ cliente['documento'] or '' }}">
+                    <div class="campo">
+                        <label for="telefone">Telefone</label>
+                        <input id="telefone" name="telefone" type="tel"
+                               value="{{ cliente['telefone'] or '' }}">
+                    </div>
 
-                <p>Telefone:</p>
-                <input name="telefone" value="{{ cliente['telefone'] or '' }}">
+                    <div class="campo">
+                        <label for="email">E-mail</label>
+                        <input id="email" name="email" type="email"
+                               value="{{ cliente['email'] or '' }}">
+                    </div>
 
-                <p>E-mail:</p>
-                <input name="email" type="email" value="{{ cliente['email'] or '' }}">
+                    <div class="campo campo-completo">
+                        <label for="endereco">Endereço</label>
+                        <input id="endereco" name="endereco"
+                               value="{{ cliente['endereco'] or '' }}">
+                    </div>
+                </div>
 
-                <p>Endereço:</p>
-                <input name="endereco" value="{{ cliente['endereco'] or '' }}">
+                <div class="acoes">
+                    <button class="salvar" type="submit">
+                        Salvar alterações
+                    </button>
 
-                <br>
-                <button type="submit">Salvar alterações</button>
-
+                    <a class="cancelar" href="{{ url_for('clientes') }}">
+                        Cancelar
+                    </a>
+                </div>
             </form>
-
-            <p><a href="/clientes">Voltar aos clientes</a></p>
-
-        </body>
-        </html>
+        </div>
+    </div>
+</body>
+</html>
     """, cliente=cliente)
 
 
@@ -1613,10 +2071,21 @@ tbody tr:hover {
 
                     <div class="tabela-container">
 
-                      <table class="tabela-produtos"> 
+             <style>
+    .tabela-movimentacoes thead th {
+        background-color: #C5D5E8;
+        color: #17365D;
+    }
+
+    .tabela-movimentacoes tbody td {
+        background-color: #F4F7FB;
+    }
+</style>         
+
+<table class="tabela-produtos tabela-movimentacoes">
     <thead>
-        <tr style="background-color: #DCE6F1;">
-            <th style="background-color: #DCE6F1;">Produto</th>
+        <tr>
+    <th>Produto</th>
                                     <th>Código SKU</th>
                                     <th>Tipo</th>
                                     <th>Quantidade</th>

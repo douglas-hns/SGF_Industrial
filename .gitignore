@@ -1,3 +1,14 @@
 __pycache__/
 *.pyc
 *.db
+# Backups antigos
+app_antes_*.py
+banco_antes_*.py
+
+# SQLite e arquivos auxiliares
+*.sqlite
+*.sqlite3
+*.db-*
+*.sqlite-*
+*.sqlite3-*
+*.sqlite
