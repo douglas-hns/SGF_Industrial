@@ -1000,7 +1000,7 @@ h2 {
 
 /* Cabeçalho mais claro */
 .topo {
-    background: #F7F9FC;
+    background: #DCE7F3;
 }
 
 
@@ -3115,78 +3115,463 @@ def locacoes():
     conexao.close()
 
     return render_template_string("""
-        <h1>Locações de Equipamentos</h1>
+    <!DOCTYPE html>
+    <html lang="pt-br">
+    <head>
+        <meta charset="UTF-8">
+        <title>Locações - SGF Industrial</title>
 
-        <h2>Nova Locação</h2>
+        <style>
+            * {
+                box-sizing: border-box;
+            }
 
-        <form method="POST">
-            <label>Cliente:</label><br>
-            <select name="cliente_id" required>
-                <option value="">Selecione o cliente</option>
-                {% for cliente in clientes %}
-                    <option value="{{ cliente.id }}">{{ cliente.nome }}</option>
-                {% endfor %}
-            </select><br><br>
+            body {
+                font-family: Arial, sans-serif;
+                background: #F4F5F7;
+                margin: 0;
+                padding: 30px;
+                color: #263445;
+            }
 
-            <label>Equipamento:</label><br>
-            <select name="equipamento_id" required>
-                <option value="">Selecione o equipamento</option>
-                {% for equipamento in equipamentos %}
-                    <option value="{{ equipamento.id }}">{{ equipamento.nome }} - {{ equipamento.modelo }}</option>
-                {% endfor %}
-            </select><br><br>
+            .container {
+                max-width: 1200px;
+                margin: auto;
+            }
 
-            <label>Modalidade:</label><br>
-            <select name="modalidade" required>
-                <option value="Diária">Diária</option>
-                <option value="Semanal">Semanal</option>
-                <option value="Mensal">Mensal</option>
-                <option value="Personalizada">Personalizada</option>
-            </select><br><br>
+            .topo {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 15px;
+                margin-bottom: 25px;
+                background: #DCE7F3;
+                border-left: 5px solid #17365D;
+                border-radius: 10px;
+                padding: 22px;
+            }
 
-            <label>Data da retirada:</label><br>
-            <input type="date" name="data_retirada" required><br><br>
+            .topo h1 {
+                color: #17365D;
+                margin: 0 0 6px;
+                font-size: 28px;
+            }
 
-            <label>Previsão de devolução:</label><br>
-            <input type="date" name="data_prevista" required><br><br>
+            .subtitulo {
+                color: #718096;
+                margin: 0;
+                font-size: 14px;
+            }
 
-            <label>Valor da locação:</label><br>
-            <input type="number" step="0.01" name="valor" required><br><br>
+            .voltar {
+                display: inline-block;
+                background: #FFFFFF;
+                color: #17365D;
+                padding: 11px 17px;
+                border: 1px solid #DCE3EC;
+                border-radius: 7px;
+                font-weight: bold;
+                text-decoration: none;
+            }
 
-            <label>Observações:</label><br>
-            <textarea name="observacoes"></textarea><br><br>
+            .voltar:hover {
+                background: #EAF0F7;
+            }
 
-            <button type="submit">Registrar Locação</button>
-        </form>
+            .card {
+                background: #FFFFFF;
+                border: 1px solid #DCE3EC;
+                border-radius: 12px;
+                padding: 25px;
+                box-shadow: 0 4px 16px rgba(23, 54, 93, 0.06);
+                margin-bottom: 24px;
+            }
 
-        <hr>
+            .card h2 {
+                margin: 0 0 18px;
+                color: #17365D;
+                font-size: 22px;
+            }
 
-        <h2>Locações Registradas</h2>
+            .card-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 10px;
+                flex-wrap: wrap;
+                margin-bottom: 18px;
+            }
 
-        <table border="1" cellpadding="8">
-            <tr>
-                <th>Cliente</th>
-                <th>Equipamento</th>
-                <th>Modalidade</th>
-                <th>Retirada</th>
-                <th>Devolução prevista</th>
-                <th>Valor</th>
-                <th>Situação</th>
-            </tr>
+            .badge {
+                background: #EAF0F7;
+                color: #17365D;
+                padding: 8px 12px;
+                border-radius: 999px;
+                font-size: 12px;
+                font-weight: bold;
+            }
 
-            {% for registro in registros %}
-            <tr>
-                <td>{{ registro.cliente_nome }}</td>
-                <td>{{ registro.equipamento_nome }}</td>
-                <td>{{ registro.modalidade }}</td>
-                <td>{{ registro.data_retirada }}</td>
-                <td>{{ registro.data_prevista_devolucao }}</td>
-                <td>R$ {{ "%.2f"|format(registro.valor) }}</td>
-                <td>{{ registro.situacao }}</td>
-            </tr>
-            {% endfor %}
-        </table>
-      """, clientes=clientes, equipamentos=equipamentos, registros=registros)
+            .form-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 18px 24px;
+            }
+
+            .campo label {
+                display: block;
+                color: #34465B;
+                font-size: 13px;
+                font-weight: bold;
+                margin-bottom: 8px;
+            }
+
+            .campo input,
+            .campo select,
+            .campo textarea {
+                width: 100%;
+                padding: 12px;
+                border: 1px solid #CBD5E0;
+                border-radius: 7px;
+                background: #FFFFFF;
+                font-size: 14px;
+                color: #263445;
+            }
+
+            .campo textarea {
+                min-height: 110px;
+                resize: vertical;
+            }
+
+            .campo-completo {
+                grid-column: 1 / -1;
+            }
+
+            .acoes {
+                grid-column: 1 / -1;
+                display: flex;
+                justify-content: flex-start;
+            }
+
+            .botao-primario {
+                background: #2474B8;
+                color: #FFFFFF;
+                border: none;
+                padding: 12px 20px;
+                border-radius: 7px;
+                font-weight: bold;
+                cursor: pointer;
+            }
+
+            .botao-primario:hover {
+                background: #175A94;
+            }
+
+            .tabela-container {
+                overflow-x: auto;
+                border: 1px solid #D5DFEA;
+                border-radius: 8px;
+            }
+
+            .tabela-locacoes {
+                width: 100%;
+                border-collapse: collapse;
+                background: #FFFFFF;
+                min-width: 950px;
+            }
+
+            .tabela-locacoes th {
+                background: #DCE7F3;
+                color: #17365D;
+                padding: 15px 12px;
+                text-align: left;
+                border-bottom: 1px solid #C5D3E2;
+                font-size: 13px;
+            }
+
+            .tabela-locacoes td {
+                padding: 15px 12px;
+                border-bottom: 1px solid #E2E8F0;
+                color: #263445;
+                font-size: 14px;
+                vertical-align: middle;
+            }
+
+            .tabela-locacoes tbody tr:nth-child(even) {
+                background: #F8FAFC;
+            }
+
+            .tabela-locacoes tbody tr:hover {
+                background: #EEF4FA;
+            }
+
+            .status-ativa {
+                display: inline-block;
+                background: #FFF3D6;
+                color: #946200;
+                padding: 6px 10px;
+                border-radius: 999px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+
+            .status-finalizada {
+                display: inline-block;
+                background: #E6F4EA;
+                color: #237A45;
+                padding: 6px 10px;
+                border-radius: 999px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+
+            .btn-devolver {
+                background: #2474B8;
+                color: white;
+                padding: 9px 14px;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                font-weight: bold;
+            }
+
+            .btn-devolver:hover {
+                background: #175A94;
+            }
+
+            .devolvido {
+                color: #237A45;
+                font-weight: bold;
+            }
+
+            .vazio {
+                text-align: center;
+                padding: 25px;
+                color: #718096;
+            }
+
+            @media (max-width: 700px) {
+                body {
+                    padding: 15px;
+                }
+
+                .form-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .campo-completo {
+                    grid-column: auto;
+                }
+
+                .acoes {
+                    grid-column: auto;
+                }
+
+                .card {
+                    padding: 18px;
+                }
+
+                .topo h1 {
+                    font-size: 23px;
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="container">
+
+            <div class="topo">
+                <div>
+                    <h1>Locações de Equipamentos</h1>
+                    <p class="subtitulo">
+                        Registre locações, acompanhe devoluções e controle a disponibilidade dos equipamentos.
+                    </p>
+                </div>
+
+                <a href="/" class="voltar">← Voltar ao painel</a>
+            </div>
+
+            <div class="card">
+                <h2>Nova Locação</h2>
+
+                <form method="POST" class="form-grid">
+
+                    <div class="campo">
+                        <label>Cliente</label>
+                        <select name="cliente_id" required>
+                            <option value="">Selecione o cliente</option>
+                            {% for cliente in clientes %}
+                                <option value="{{ cliente.id }}">{{ cliente.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="campo">
+                        <label>Equipamento</label>
+                        <select name="equipamento_id" required>
+                            <option value="">Selecione o equipamento</option>
+                            {% for equipamento in equipamentos %}
+                                <option value="{{ equipamento.id }}">{{ equipamento.nome }} - {{ equipamento.modelo }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="campo">
+                        <label>Modalidade</label>
+                        <select name="modalidade" required>
+                            <option value="Diária">Diária</option>
+                            <option value="Semanal">Semanal</option>
+                            <option value="Mensal">Mensal</option>
+                            <option value="Personalizada">Personalizada</option>
+                        </select>
+                    </div>
+
+                    <div class="campo">
+                        <label>Data da retirada</label>
+                        <input type="date" name="data_retirada" required>
+                    </div>
+
+                    <div class="campo">
+                        <label>Previsão de devolução</label>
+                        <input type="date" name="data_prevista" required>
+                    </div>
+
+                    <div class="campo">
+                        <label>Valor da locação</label>
+                        <input type="number" step="0.01" name="valor" required>
+                    </div>
+
+                    <div class="campo campo-completo">
+                        <label>Observações</label>
+                        <textarea name="observacoes"></textarea>
+                    </div>
+
+                    <div class="acoes">
+                        <button type="submit" class="botao-primario">Registrar Locação</button>
+                    </div>
+
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>Locações Registradas</h2>
+                    <span class="badge">{{ registros|length }} registro(s)</span>
+                </div>
+
+                <div class="tabela-container">
+                    <table class="tabela-locacoes">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Equipamento</th>
+                                <th>Modalidade</th>
+                                <th>Retirada</th>
+                                <th>Devolução prevista</th>
+                                <th>Valor</th>
+                                <th>Situação</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for registro in registros %}
+                            <tr>
+                                <td>{{ registro.cliente_nome }}</td>
+                                <td>{{ registro.equipamento_nome }}</td>
+                                <td>{{ registro.modalidade }}</td>
+                                <td>{{ registro.data_retirada }}</td>
+                                <td>{{ registro.data_prevista_devolucao }}</td>
+                                <td>R$ {{ "%.2f"|format(registro.valor) }}</td>
+
+                                <td>
+                                    {% if registro.situacao == "Ativa" %}
+                                        <span class="status-ativa">Ativa</span>
+                                    {% else %}
+                                        <span class="status-finalizada">Finalizada</span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if registro.situacao == "Ativa" %}
+                                        <form method="POST"
+                                              action="{{ url_for('devolver_locacao', locacao_id=registro.id) }}"
+                                              onsubmit="return confirm('Confirmar devolução deste equipamento?');">
+
+                                            <button type="submit" class="btn-devolver">
+                                                Registrar devolução
+                                            </button>
+                                        </form>
+                                    {% else %}
+                                        <span class="devolvido">✓ Devolvido</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="8" class="vazio">
+                                    Nenhuma locação cadastrada até o momento.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </body>
+    </html>
+""", clientes=clientes, equipamentos=equipamentos, registros=registros)
+
+
+# ==========================================
+# DEVOLUÇÃO DE EQUIPAMENTOS LOCADOS
+# ==========================================
+
+@app.route("/locacoes/devolver/<int:locacao_id>", methods=["POST"])
+def devolver_locacao(locacao_id):
+
+    from datetime import date
+
+    conexao = conectar()
+
+    try:
+        locacao = conexao.execute("""
+            SELECT equipamento_id, situacao
+            FROM locacoes
+            WHERE id = ? AND empresa_id = 1
+        """, (locacao_id,)).fetchone()
+
+        if locacao is None or locacao["situacao"] != "Ativa":
+            return redirect(url_for("locacoes"))
+
+        # Finaliza a locação e registra a devolução
+        conexao.execute("""
+            UPDATE locacoes
+            SET situacao = 'Finalizada',
+                data_devolucao = ?
+            WHERE id = ?
+              AND empresa_id = 1
+              AND situacao = 'Ativa'
+        """, (date.today().isoformat(), locacao_id))
+
+        # Libera o equipamento para outra locação
+        conexao.execute("""
+            UPDATE equipamentos
+            SET situacao = 'Disponível'
+            WHERE id = ?
+              AND empresa_id = 1
+              AND situacao = 'Alugado'
+        """, (locacao["equipamento_id"],))
+
+        conexao.commit()
+
+    finally:
+        conexao.close()
+
+    return redirect(url_for("locacoes"))
 
 # ==========================================
 # CONTAS A RECEBER
