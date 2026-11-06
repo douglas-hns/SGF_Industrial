@@ -777,131 +777,386 @@ def equipamentos():
         <html lang="pt-br">
         <head>
             <meta charset="UTF-8">
-            <title>Equipamentos - SGF Industrial</title>
+          
+<title>Equipamentos - SGF Industrial</title>
 
-            <style>
-                body {
-                    font-family: Arial, sans-serif;
-                    background: #F2F5F9;
-                    color: #26364A;
-                    padding: 30px;
-                }
+<style>
+    * {
+        box-sizing: border-box;
+    }
 
-                .container {
-                    max-width: 950px;
-                    margin: auto;
-                    background: white;
-                    padding: 30px;
-                    border-radius: 12px;
-                }
+    body {
+        font-family: Arial, sans-serif;
+        background: #F1F4F9;
+        color: #263445;
+        margin: 0;
+        padding: 30px;
+    }
 
-                input, select {
-                    display: block;
-                    width: 100%;
-                    padding: 10px;
-                    margin: 8px 0 15px;
-                    border: 1px solid #CBD5E0;
-                    border-radius: 6px;
-                    box-sizing: border-box;
-                }
+    .container {
+        max-width: 1200px;
+        margin: auto;
+        background: #FFFFFF;
+        padding: 30px;
+        border: 1px solid #DCE3EC;
+        border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(23, 54, 93, 0.06);
+    }
 
-                button {
-                    background: #2474B8;
-                    color: white;
-                    border: none;
-                    padding: 12px 20px;
-                    border-radius: 6px;
-                    cursor: pointer;
-                }
+    .topo {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
 
-                .equipamento {
-                    padding: 15px;
-                    border-bottom: 1px solid #E2E8F0;
-                }
+    .topo h1 {
+        color: #17365D;
+        margin: 0 0 6px;
+        font-size: 28px;
+    }
 
-                a {
-                    color: #2474B8;
-                    text-decoration: none;
-                }
-            </style>
+    .subtitulo {
+        color: #718096;
+        margin: 0;
+        font-size: 14px;
+    }
+
+    .voltar {
+        display: inline-block;
+        background: #FFFFFF;
+        color: #17365D;
+        padding: 11px 17px;
+        border: 1px solid #DCE3EC;
+        border-radius: 7px;
+        font-weight: bold;
+        text-decoration: none;
+    }
+
+    .voltar:hover {
+        background: #EAF0F7;
+    }
+
+    input, select {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        margin: 8px 0 15px;
+        border: 1px solid #CBD5E0;
+        border-radius: 6px;
+        background: #FFFFFF;
+    }
+
+    button {
+        background: #2474B8;
+        color: #FFFFFF;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background: #175A94;
+    }
+
+    .equipamento {
+        padding: 15px;
+        border-bottom: 1px solid #E2E8F0;
+    }
+
+    a {
+        color: #2474B8;
+        text-decoration: none;
+    }
+
+    .form-equipamentos {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px 24px;
+    }
+
+    .form-equipamentos .campo label {
+        display: block;
+        color: #34465B;
+        font-size: 13px;
+        font-weight: bold;
+    }
+
+    .form-equipamentos .campo input,
+    .form-equipamentos .campo select {
+        width: 100%;
+        margin: 8px 0 0;
+        padding: 12px;
+        border: 1px solid #CBD5E0;
+        border-radius: 7px;
+    }
+
+    .form-equipamentos .acoes {
+        grid-column: 1 / -1;
+    }
+
+    @media (max-width: 700px) {
+        .form-equipamentos {
+            grid-template-columns: 1fr;
+        }
+    }
+
+/* Fundo principal da página */
+
+body {
+    background: #F4F5F7;
+}
+
+
+/* Área principal */
+
+.container {
+    background: #F9FAFC;
+    border: 1px solid #D8DEE6;
+}
+
+
+/* Cabeçalho destacado */
+.topo {
+    background: #DCE7F3;
+    padding: 22px;
+    border-left: 5px solid #17365D;
+    border-radius: 9px;
+}
+
+/* Formulário de equipamentos */
+
+.form-equipamentos {
+    background: #FFFFFF;
+    border: 1px solid #CCD9E7;
+    border-radius: 10px;
+    padding: 24px;
+}
+
+
+/* Campos de preenchimento */
+.form-equipamentos input,
+.form-equipamentos select {
+    background: #FFFFFF;
+    border: 1px solid #B8CADD;
+}
+
+/* Título dos equipamentos cadastrados */
+h2 {
+    color: #17365D;
+    margin-top: 28px;
+}
+
+/* Equipamentos cadastrados em cartões */
+.equipamento {
+    background: #FFFFFF;
+    padding: 18px;
+    border: 1px solid #D5DFEA;
+    border-left: 4px solid #2474B8;
+    border-radius: 8px;
+        margin-bottom: 14px;
+}
+
+.tabela-equipamentos {
+    width: 100%;
+    border-collapse: collapse;
+    background: #FFFFFF;
+}
+
+.tabela-equipamentos th {
+    background: #DCE7F3;
+    color: #17365D;
+    padding: 15px 12px;
+    text-align: left;
+    border: 1px solid #B8CADD;
+}
+
+.tabela-equipamentos td {
+    padding: 15px 12px;
+    border: 1px solid #D5DFEA;
+    color: #263445;
+}
+
+.tabela-equipamentos tbody tr:nth-child(even) {
+    background: #F1F5FA;
+}
+
+.tabela-equipamentos tbody tr:hover {
+    background: #EAF0F7;
+}
+
+.tabela-container {
+    overflow-x: auto;
+    border-radius: 8px;
+}
+
+/* Área principal branca */
+.container {
+    background: #FFFFFF;
+}
+
+/* Cabeçalho mais claro */
+.topo {
+    background: #F7F9FC;
+}
+
+
+
+</style>
+ 
         </head>
 
         <body>
             <div class="container">
 
-                <h1>Cadastro de equipamentos</h1>
+                
+<div class="topo">
+    <div>
+        <h1>Cadastro de Equipamentos</h1>
+        <p class="subtitulo">
+            Gerencie seus equipamentos, disponibilidade e valores de locação.
+        </p>
+    </div>
 
-                <form method="POST">
+    <a href="/" class="voltar">← Voltar ao painel</a>
+</div>
 
-                    <label>Nome do equipamento</label>
-                    <input name="nome" required>
 
-                    <label>Marca</label>
-                    <input name="marca">
+            
+<form method="POST" class="form-equipamentos">
 
-                    <label>Modelo</label>
-                    <input name="modelo">
+    <div class="campo">
+        <label>Nome do equipamento</label>
+        <input type="text" name="nome" required>
+    </div>
 
-                    <label>Número de série</label>
-                    <input name="numero_serie">
+    <div class="campo">
+        <label>Marca</label>
+        <input type="text" name="marca">
+    </div>
 
-                    <label>Tipo de gás detectado</label>
-                    <input name="tipo_gas">
+    <div class="campo">
+        <label>Modelo</label>
+        <input type="text" name="modelo">
+    </div>
 
-                    <label>Situação</label>
-                    <select name="situacao">
-                        <option>Disponível</option>
-                        <option>Alugado</option>
-                        <option>Em manutenção</option>
-                    </select>
+    <div class="campo">
+        <label>Número de série</label>
+        <input type="text" name="numero_serie">
+    </div>
 
-                    <label>Valor da diária (R$)</label>
-                    <input type="number" step="0.01" min="0" name="valor_diaria">
+    <div class="campo">
+        <label>Tipo de gás detectado</label>
+        <input type="text" name="tipo_gas">
+    </div>
 
-                    <label>Valor semanal (R$)</label>
-                    <input type="number" step="0.01" min="0" name="valor_semanal">
+    <div class="campo">
+        <label>Situação</label>
+        <select name="situacao">
+            <option>Disponível</option>
+            <option>Alugado</option>
+            <option>Em manutenção</option>
+        </select>
+    </div>
 
-                    <label>Valor mensal (R$)</label>
-                    <input type="number" step="0.01" min="0" name="valor_mensal">
+    <div class="campo">
+        <label>Valor da diária (R$)</label>
+        <input type="number" step="0.01" min="0" name="valor_diaria">
+    </div>
 
-                    <button type="submit">Salvar equipamento</button>
+    <div class="campo">
+        <label>Valor semanal (R$)</label>
+        <input type="number" step="0.01" min="0" name="valor_semanal">
+    </div>
 
-                </form>
+    <div class="campo">
+        <label>Valor mensal (R$)</label>
+        <input type="number" step="0.01" min="0" name="valor_mensal">
+    </div>
 
-                <hr>
-
-                <h2>Equipamentos cadastrados</h2>
-
-                {% for equipamento in lista_equipamentos %}
-                    <div class="equipamento">
-                        
-<strong>{{ equipamento["nome"] }}</strong><br>
-Marca: {{ equipamento["marca"] or "Não informada" }}<br>
-Modelo: {{ equipamento["modelo"] or "Não informado" }}<br>
-Número de série: {{ equipamento["numero_serie"] or "Não informado" }}<br>
-Situação: {{ equipamento["situacao"] }}<br>
-
-<a href="{{ url_for('editar_equipamento', id=equipamento['id']) }}">
-    Editar equipamento
-</a>
-
-<form method="POST"
-      action="{{ url_for('excluir_equipamento', id=equipamento['id']) }}"
-      onsubmit="return confirm('Tem certeza que deseja excluir este equipamento?');"
-      style="display: inline;">
-
-    <button type="submit"
-            style="background: #DC3545; color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer;">
-        Excluir equipamento
-    </button>
+    <div class="acoes">
+        <button type="submit">Salvar equipamento</button>
+    </div>
 
 </form>
+  
+                <hr>
 
+                
+<h2>Equipamentos cadastrados</h2>
 
-                    </div>
-                {% else %}
-                    <p>Nenhum equipamento cadastrado.</p>
-                {% endfor %}
+<div class="tabela-container">
+    <table class="tabela-equipamentos" style="min-width: 850px;">
+
+        <thead>
+            <tr>
+                <th>Equipamento</th>
+                <th>Marca</th>
+                <th>Modelo</th>
+                <th>Número de série</th>
+                <th>Situação</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for equipamento in lista_equipamentos %}
+            <tr>
+                <td>
+                    <strong>{{ equipamento["nome"] }}</strong>
+                </td>
+
+                <td>
+                    {{ equipamento["marca"] or "Não informada" }}
+                </td>
+
+                <td>
+                    {{ equipamento["modelo"] or "Não informado" }}
+                </td>
+
+                <td>
+                    {{ equipamento["numero_serie"] or "Não informado" }}
+                </td>
+
+                <td>
+                    {{ equipamento["situacao"] }}
+                </td>
+
+                <td>
+                    <a href="{{ url_for('editar_equipamento', id=equipamento['id']) }}"
+                       style="display:inline-block; padding:8px 12px; background:#E8F0F8; color:#17365D; border-radius:6px; margin:3px; font-weight:bold;">
+                        Editar
+                    </a>
+
+                    <form method="POST"
+                          action="{{ url_for('excluir_equipamento', id=equipamento['id']) }}"
+                          onsubmit="return confirm('Tem certeza que deseja excluir este equipamento?');"
+                          style="display:inline;">
+
+                        <button type="submit"
+                                style="background:#DC3545; color:white; padding:8px 12px; border-radius:6px; margin:3px;">
+                            Excluir
+                        </button>
+
+                    </form>
+                </td>
+            </tr>
+
+            {% else %}
+            <tr>
+                <td colspan="6" style="text-align:center; padding:25px;">
+                    Nenhum equipamento cadastrado.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+</div>
+
 
                 <p><a href="/">Voltar ao painel</a></p>
 
