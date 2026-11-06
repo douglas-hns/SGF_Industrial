@@ -2893,42 +2893,153 @@ def inicio():
     </a>
 
 </section>
+
 <section class="card">
-    <h2>⚠️ Alertas de Estoque</h2>
+
+    <div style="display:flex; justify-content:space-between;
+                align-items:center; gap:15px; flex-wrap:wrap;">
+
+        <div>
+            <h2 style="margin:0; color:#17365D; font-size:23px;">
+                Controle de Estoque
+            </h2>
+
+            <p style="color:#718096; font-size:14px;
+                      margin:7px 0 0;">
+                Acompanhe os produtos que precisam de reposição.
+            </p>
+        </div>
+
+        {% if produtos_estoque_baixo %}
+            <span style="background:#FFF3D6; color:#946200;
+                         padding:8px 14px; border-radius:20px;
+                         font-size:13px; font-weight:bold;">
+                {{ produtos_estoque_baixo|length }} alerta(s)
+            </span>
+        {% else %}
+            <span style="background:#E6F4EA; color:#237A45;
+                         padding:8px 14px; border-radius:20px;
+                         font-size:13px; font-weight:bold;">
+                0 alertas
+            </span>
+        {% endif %}
+
+    </div>
 
     {% if produtos_estoque_baixo %}
-        <p>Os seguintes produtos precisam de reposição:</p>
 
-     <table style="width:100%; border-collapse:collapse; margin-top:15px;">
-    <thead>
-        <tr>
-            <th style="padding:14px 20px; text-align:left; background:#f1f5f9; border-bottom:1px solid #ddd;">Produto</th>
-            <th style="padding:14px 20px; text-align:left; background:#f1f5f9; border-bottom:1px solid #ddd;">Código</th>
-            <th style="padding:14px 20px; text-align:center; background:#f1f5f9; border-bottom:1px solid #ddd;">Estoque atual</th>
-            <th style="padding:14px 20px; text-align:center; background:#f1f5f9; border-bottom:1px solid #ddd;">Estoque mínimo</th>
-        </tr>
-    </thead>
+        <div style="background:#FFF8E8;
+                    border:1px solid #F0D9A0;
+                    border-left:4px solid #E2A529;
+                    padding:18px;
+                    border-radius:8px;
+                    margin-top:20px;">
 
-    <tbody>
-        {% for produto in produtos_estoque_baixo %}
-        <tr>
-            <td style="padding:14px 20px; border-bottom:1px solid #e5e7eb;">{{ produto['nome'] }}</td>
-            <td style="padding:14px 20px; border-bottom:1px solid #e5e7eb;">{{ produto['codigo'] }}</td>
-            <td style="padding:14px 20px; text-align:center; border-bottom:1px solid #e5e7eb;">{{ produto['quantidade_estoque'] }}</td>
-            <td style="padding:14px 20px; text-align:center; border-bottom:1px solid #e5e7eb;">{{ produto['estoque_minimo'] }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>   
+            <strong style="color:#865B13; font-size:16px;">
+                ⚠ Reposição necessária
+            </strong>
+
+            <p style="color:#795F33; margin:7px 0 0;">
+                Existem produtos com estoque baixo.
+                Verifique os itens abaixo.
+            </p>
+
+        </div>
+
+        <div style="overflow-x:auto; margin-top:18px;
+                    border:1px solid #D5DFEA; border-radius:8px;">
+
+            <table style="width:100%; border-collapse:collapse;">
+
+                <thead style="background:#DCE7F3; color:#17365D;">
+                    <tr>
+                        <th style="padding:14px; text-align:left;
+                                   border-bottom:1px solid #C5D3E2;">
+                            Produto
+                        </th>
+                        <th style="padding:14px; text-align:left;
+                                   border-bottom:1px solid #C5D3E2;">
+                            Código
+                        </th>
+                        <th style="padding:14px; text-align:center;
+                                   border-bottom:1px solid #C5D3E2;">
+                            Estoque atual
+                        </th>
+                        <th style="padding:14px; text-align:center;
+                                   border-bottom:1px solid #C5D3E2;">
+                            Estoque mínimo
+                        </th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for produto in produtos_estoque_baixo %}
+                    <tr style="background:#FFFFFF;">
+                        <td style="padding:14px; border-bottom:1px solid #E2E8F0;">
+                            {{ produto['nome'] }}
+                        </td>
+                        <td style="padding:14px; border-bottom:1px solid #E2E8F0;">
+                            {{ produto['codigo'] }}
+                        </td>
+                        <td style="padding:14px; text-align:center;
+                                   color:#B45309; font-weight:bold;
+                                   border-bottom:1px solid #E2E8F0;">
+                            {{ produto['quantidade_estoque'] }}
+                        </td>
+                        <td style="padding:14px; text-align:center;
+                                   border-bottom:1px solid #E2E8F0;">
+                            {{ produto['estoque_minimo'] }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
 
     {% else %}
-        <p>✅ Nenhum produto precisa de reposição no momento.</p>
+
+        <div style="display:flex; align-items:center; gap:15px;
+                    background:#F0F8F2;
+                    border:1px solid #D0E8D7;
+                    border-left:4px solid #2E8B57;
+                    border-radius:8px;
+                    padding:20px;
+                    margin-top:20px;">
+
+            <div style="background:#D8F0DF;
+                        color:#237A45;
+                        width:40px; height:40px;
+                        border-radius:50%;
+                        display:flex; align-items:center;
+                        justify-content:center;
+                        font-size:23px; font-weight:bold;
+                        flex-shrink:0;">
+                ✓
+            </div>
+
+            <div>
+                <strong style="color:#237A45; font-size:16px;">
+                    Estoque em dia
+                </strong>
+
+                <p style="margin:5px 0 0;
+                          color:#52725B; font-size:14px;">
+                    Nenhum produto precisa de reposição no momento.
+                </p>
+            </div>
+
+        </div>
+
     {% endif %}
 
-    <a class="botao" href="/produtos">
+    <a class="botao" href="/produtos"
+       style="display:inline-block; margin-top:20px;">
         Consultar produtos
     </a>
+
 </section>
+
             </main>
         """,
         saldo_caixa=saldo_caixa,
