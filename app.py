@@ -3088,6 +3088,46 @@ def locacoes():
             WHERE id = ? AND empresa_id = 1
         """, (equipamento_id,))
 
+
+        # Identifica a locação que acabou de ser cadastrada
+        locacao_id = cursor.lastrowid
+
+        # Cria a cobrança vinculada à locação
+        from datetime import date
+
+        cursor.execute("""
+            INSERT INTO contas_receber (
+                empresa_id,
+                cliente_id,
+                locacao_id,
+                descricao,
+                valor,
+                data_emissao,
+                data_vencimento,
+                situacao,
+                observacoes
+            )
+            SELECT ?, ?, ?, ?, ?, ?, ?, 'Pendente', ?
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM contas_receber
+                WHERE empresa_id = ?
+                  AND locacao_id = ?
+            )
+        """, (
+            1,
+            cliente_id,
+            locacao_id,
+            f"Locação de equipamento - {modalidade}",
+            valor,
+            date.today().isoformat(),
+            data_prevista,
+            observacoes,
+            1,
+            locacao_id
+        ))
+
+
         conexao.commit()
         conexao.close()
         return redirect(url_for("locacoes"))
