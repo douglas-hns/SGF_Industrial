@@ -3112,9 +3112,15 @@ def locacoes():
         ORDER BY locacoes.id DESC
     """).fetchall()
 
+    
     conexao.close()
 
+    # Data atual para identificar locações atrasadas
+    from datetime import date
+    hoje = date.today().isoformat()
+
     return render_template_string("""
+
     <!DOCTYPE html>
     <html lang="pt-br">
     <head>
@@ -3461,69 +3467,99 @@ def locacoes():
                 </div>
 
                 <div class="tabela-container">
-                    <table class="tabela-locacoes">
-                        <thead>
-                            <tr>
-                                <th>Cliente</th>
-                                <th>Equipamento</th>
-                                <th>Modalidade</th>
-                                <th>Retirada</th>
-                                <th>Devolução prevista</th>
-                                <th>Valor</th>
-                                <th>Situação</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
+             
+<table class="tabela-locacoes">
+    <thead>
+        <tr>
+            <th>Cliente</th>
+            <th>Equipamento</th>
+            <th>Modalidade</th>
+            <th>Retirada</th>
+            <th>Devolução prevista</th>
+            <th>Valor</th>
+            <th>Situação</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
 
-                        <tbody>
-                            {% for registro in registros %}
-                            <tr>
-                                <td>{{ registro.cliente_nome }}</td>
-                                <td>{{ registro.equipamento_nome }}</td>
-                                <td>{{ registro.modalidade }}</td>
-                                <td>{{ registro.data_retirada }}</td>
-                                <td>{{ registro.data_prevista_devolucao }}</td>
-                                <td>R$ {{ "%.2f"|format(registro.valor) }}</td>
+    <tbody>
+        {% for registro in registros %}
+        <tr>
+            <td>{{ registro.cliente_nome }}</td>
+            <td>{{ registro.equipamento_nome }}</td>
+            <td>{{ registro.modalidade }}</td>
 
-                                <td>
-                                    {% if registro.situacao == "Ativa" %}
-                                        <span class="status-ativa">Ativa</span>
-                                    {% else %}
-                                        <span class="status-finalizada">Finalizada</span>
-                                    {% endif %}
-                                </td>
+            <td>
+                {{ registro.data_retirada[8:10] }}/{{ registro.data_retirada[5:7] }}/{{ registro.data_retirada[0:4] }}
+            </td>
 
-                                <td>
-                                    {% if registro.situacao == "Ativa" %}
-                                        <form method="POST"
-                                              action="{{ url_for('devolver_locacao', locacao_id=registro.id) }}"
-                                              onsubmit="return confirm('Confirmar devolução deste equipamento?');">
+            <td>
+                {{ registro.data_prevista_devolucao[8:10] }}/{{ registro.data_prevista_devolucao[5:7] }}/{{ registro.data_prevista_devolucao[0:4] }}
+            </td>
 
-                                            <button type="submit" class="btn-devolver">
-                                                Registrar devolução
-                                            </button>
-                                        </form>
-                                    {% else %}
-                                        <span class="devolvido">✓ Devolvido</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% else %}
-                            <tr>
-                                <td colspan="8" class="vazio">
-                                    Nenhuma locação cadastrada até o momento.
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+            <td>
+                R$ {{ "%.2f"|format(registro.valor) }}
+            </td>
+
+            <td>
+                {% if registro.situacao == "Ativa" %}
+                    {% if registro.data_prevista_devolucao < hoje %}
+                        <span style="background:#FDE8E8;
+                                     color:#B42318;
+                                     padding:6px 12px;
+                                     border-radius:20px;
+                                     font-size:12px;
+                                     font-weight:bold;">
+                            ⚠ Atrasada
+                        </span>
+                    {% else %}
+                        <span class="status-ativa">Ativa</span>
+                    {% endif %}
+                {% else %}
+                    <span class="status-finalizada">Finalizada</span>
+                {% endif %}
+            </td>
+
+            <td>
+                {% if registro.situacao == "Ativa" %}
+                    <form method="POST"
+                          action="{{ url_for('devolver_locacao', locacao_id=registro.id) }}"
+                          onsubmit="return confirm('Confirmar devolução deste equipamento?');">
+
+                        <button type="submit" class="btn-devolver">
+                            Registrar devolução
+                        </button>
+                    </form>
+                {% else %}
+                    <span class="devolvido">✓ Devolvido</span>
+                {% endif %}
+            </td>
+        </tr>
+
+        {% else %}
+        <tr>
+            <td colspan="8" class="vazio">
+                Nenhuma locação cadastrada até o momento.
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+     
                 </div>
             </div>
 
         </div>
     </body>
     </html>
-""", clientes=clientes, equipamentos=equipamentos, registros=registros)
+
+    """,
+        clientes=clientes,
+        equipamentos=equipamentos,
+        registros=registros,
+        hoje=hoje
+    )
+
 
 
 # ==========================================
