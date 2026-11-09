@@ -216,9 +216,59 @@ def clientes():
             grid-template-columns: 1fr;
         }
     }
+        /* Cabeçalho padronizado de Clientes */
+    .topo-clientes {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 25px;
+        background: #DCE7F3;
+        padding: 22px;
+        border-left: 5px solid #17365D;
+        border-radius: 9px;
+    }
+
+    .topo-clientes h1 {
+        color: #17365D;
+        margin: 0 0 6px;
+        font-size: 28px;
+    }
+
+    .topo-clientes .subtitulo {
+        color: #718096;
+        margin: 0;
+        font-size: 14px;
+    }
+
+    .voltar-clientes {
+        display: inline-block;
+        background: #FFFFFF;
+        color: #17365D;
+        padding: 11px 17px;
+        border: 1px solid #DCE3EC;
+        border-radius: 7px;
+        font-weight: bold;
+        text-decoration: none;
+    }
+
+    .voltar-clientes:hover {
+        background: #EAF0F7;
+        text-decoration: none;
+    }
 </style>
 
-<h1>Gestão de Clientes</h1>
+<div class="topo-clientes">
+    <div>
+        <h1>Gestão de Clientes</h1>
+        <p class="subtitulo">
+            Gerencie o cadastro e as informações dos seus clientes.
+        </p>
+    </div>
+
+    <a href="/" class="voltar-clientes">← Voltar ao painel</a>
+</div>
 
 <h2>Adicionar novo cliente</h2>
 <p class="descricao-clientes">
@@ -256,7 +306,7 @@ def clientes():
     <div class="acoes-cadastro">
         <button type="submit">Salvar cliente</button>
     </div>
-</form> 
+</form>
                 <hr>
 
               <style>
@@ -399,7 +449,7 @@ def clientes():
             {% endfor %}
         </tbody>
     </table>
-</div>  
+</div>
 
                 <p><a href="/">Voltar ao painel</a></p>
 <h2
@@ -777,7 +827,7 @@ def equipamentos():
         <html lang="pt-br">
         <head>
             <meta charset="UTF-8">
-          
+
 <title>Equipamentos - SGF Industrial</title>
 
 <style>
@@ -1006,13 +1056,13 @@ h2 {
 
 
 </style>
- 
+
         </head>
 
         <body>
             <div class="container">
 
-                
+
 <div class="topo">
     <div>
         <h1>Cadastro de Equipamentos</h1>
@@ -1025,7 +1075,7 @@ h2 {
 </div>
 
 
-            
+
 <form method="POST" class="form-equipamentos">
 
     <div class="campo">
@@ -1082,10 +1132,10 @@ h2 {
     </div>
 
 </form>
-  
+
                 <hr>
 
-                
+
 <h2>Equipamentos cadastrados</h2>
 
 <div class="tabela-container">
@@ -1403,6 +1453,10 @@ def produtos():
                     margin-bottom: 25px;
                     flex-wrap: wrap;
                     gap: 15px;
+                    background: #DCE7F3;
+                    padding: 22px;
+                    border-left: 5px solid #17365D;
+                    border-radius: 9px;
                 }
 
                 .topo h1 {
@@ -1450,6 +1504,48 @@ def produtos():
                     font-size: 13px;
                     margin: 0 0 22px;
                 }
+                .titulo-secao {
+    background: #F4F7FB;
+    border-left: 4px solid #17365D;
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin-bottom: 22px;
+}
+
+.titulo-secao h2 {
+    color: #17365D;
+    margin: 0 0 6px;
+    font-size: 22px;
+}
+
+.titulo-secao p {
+    color: #718096;
+    margin: 0;
+    font-size: 13px;
+}
+
+.titulo-lista {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
+
+.titulo-lista .titulo-secao {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.titulo-lista .badge {
+    background: #EAF0F7;
+    color: #17365D;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+}
 
                 .form-grid {
                     display: grid;
@@ -1647,11 +1743,12 @@ def produtos():
 
                 <div class="card">
 
-                    <h2>Adicionar novo produto</h2>
-
-                    <p class="descricao-card">
-                        Preencha as informações para cadastrar um produto.
-                    </p>
+                  <div class="titulo-secao">
+    <h2>Adicionar novo produto</h2>
+    <p>
+        Preencha as informações para cadastrar um produto.
+    </p>
+</div>
 
                     <form method="POST">
 
@@ -1711,14 +1808,13 @@ def produtos():
 
                 <div class="card">
 
-                    <div class="titulo-lista">
-                        <div>
-                       
-<h2>Produtos cadastrados</h2>
-
-<p class="descricao-card">
-    Consulte os produtos e a situação atual do estoque.
-</p>
+               <div class="titulo-lista">
+    <div class="titulo-secao">
+        <h2>Produtos cadastrados</h2>
+        <p>
+            Consulte os produtos e a situação atual do estoque.
+        </p>
+</div>
 
 
 <form method="GET" action="/produtos" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:20px 0;">
@@ -1763,7 +1859,7 @@ def produtos():
     {{ lista_produtos|length }} produto(s)
 </span>
 </div>
-     
+
                     </div>
 
                     <div class="tabela-container">
@@ -1852,7 +1948,7 @@ def produtos():
         categoria_filtro=categoria_filtro
     )
 
-        
+
 
 # ==========================================
 # MOVIMENTAÇÕES DE ESTOQUE
@@ -1996,14 +2092,17 @@ def movimentacoes_estoque():
                 }
 
                 .topo {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    flex-wrap: wrap;
-                    gap: 15px;
-                    margin-bottom: 25px;
-                }
-
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 25px;
+    background: #DCE7F3;
+    padding: 22px;
+    border-left: 5px solid #17365D;
+    border-radius: 9px;
+}
                 .topo h1 {
                     color: #17365D;
                     margin: 0 0 6px;
@@ -2049,6 +2148,48 @@ def movimentacoes_estoque():
                     font-size: 13px;
                     margin: 0 0 22px;
                 }
+                .titulo-secao {
+    background: #F4F7FB;
+    border-left: 4px solid #17365D;
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin-bottom: 22px;
+}
+
+.titulo-secao h2 {
+    color: #17365D;
+    margin: 0 0 6px;
+    font-size: 22px;
+}
+
+.titulo-secao p {
+    color: #718096;
+    margin: 0;
+    font-size: 13px;
+}
+
+.titulo-lista {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
+
+.titulo-lista .titulo-secao {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.titulo-lista .badge {
+    background: #EAF0F7;
+    color: #17365D;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+}
 
                 .form-grid {
                     display: grid;
@@ -2249,12 +2390,13 @@ tbody tr:hover {
 
                 <div class="card">
 
-                    <h2>Registrar movimentação</h2>
+                 <div class="titulo-secao">
+    <h2>Registrar movimentação</h2>
+    <p>
+        Informe o produto, o tipo e a quantidade movimentada.
+    </p>
+</div>
 
-                    <p class="descricao-card">
-                        Informe o produto, o tipo e a quantidade movimentada.
-                    </p>
-          
 
                     <form method="POST">
 
@@ -2311,13 +2453,13 @@ tbody tr:hover {
 
                 <div class="card">
 
-                    <div class="titulo-lista">
-                        <div>
-                            <h2>Histórico de movimentações</h2>
-                            <p class="descricao-card">
-                                Acompanhe todas as entradas e saídas registradas.
-                            </p>
-                        </div>
+                   <div class="titulo-lista">
+    <div class="titulo-secao">
+        <h2>Histórico de movimentações</h2>
+        <p>
+            Acompanhe todas as entradas e saídas registradas.
+        </p>
+    </div>
 
                         <span class="contador">
                             {{ historico|length }} movimentação(ões)
@@ -2335,7 +2477,7 @@ tbody tr:hover {
     .tabela-movimentacoes tbody td {
         background-color: #F4F7FB;
     }
-</style>         
+</style>
 
 <table class="tabela-produtos tabela-movimentacoes">
     <thead>
@@ -2416,7 +2558,7 @@ tbody tr:hover {
         </html>
     """,
         lista_produtos=lista_produtos,
-        
+
     )
 
 
@@ -2747,7 +2889,7 @@ def inicio():
 <a href="/contas-receber">📥 Contas a receber</a>
 <a href="/fechamento-mensal">📅 Fechamento mensal</a>
 <a href="/fechamento-anual">📊 Fechamento anual</a>
-            
+
                     <a href="#">📊 Relatórios</a>
                     <a href="#">🏢 Empresas</a>
                     <a href="#">⚙ Configurações</a>
@@ -3051,7 +3193,7 @@ def inicio():
         maior_movimento=maior_movimento,
         maior_resultado=maior_resultado,
         produtos_estoque_baixo=produtos_estoque_baixo
-    )  
+    )
 
 
 @app.route("/locacoes", methods=["GET", "POST"])
@@ -3181,7 +3323,7 @@ def locacoes():
         ORDER BY locacoes.id DESC
     """).fetchall()
 
-    
+
     conexao.close()
 
     # Data atual para identificar locações atrasadas
@@ -3536,7 +3678,7 @@ def locacoes():
                 </div>
 
                 <div class="tabela-container">
-             
+
 <table class="tabela-locacoes">
     <thead>
         <tr>
@@ -3614,7 +3756,7 @@ def locacoes():
         {% endfor %}
     </tbody>
 </table>
-     
+
                 </div>
             </div>
 
@@ -3738,7 +3880,7 @@ def contas_receber():
 
     conexao.close()
 
-  
+
     return render_template_string("""
     <!DOCTYPE html>
     <html lang="pt-br">
@@ -3774,6 +3916,46 @@ def contas_receber():
                 color: #64748b;
                 margin-bottom: 28px;
             }
+            /* Cabeçalho padronizado - Contas a Receber */
+.topo-financeiro {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 25px;
+    background: #DCE7F3;
+    padding: 22px;
+    border-left: 5px solid #17365D;
+    border-radius: 9px;
+}
+
+.topo-financeiro h1 {
+    color: #17365D;
+    margin: 0 0 6px;
+    font-size: 28px;
+}
+
+.topo-financeiro .subtitulo {
+    color: #718096;
+    margin: 0;
+    font-size: 14px;
+}
+
+.voltar-financeiro {
+    display: inline-block;
+    background: #FFFFFF;
+    color: #17365D;
+    padding: 11px 17px;
+    border: 1px solid #DCE3EC;
+    border-radius: 7px;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.voltar-financeiro:hover {
+    background: #EAF0F7;
+}
 
             .card {
                 background: white;
@@ -3782,6 +3964,26 @@ def contas_receber():
                 margin-bottom: 25px;
                 box-shadow: 0 3px 12px rgba(0,0,0,0.04);
             }
+            /* Cabeçalhos internos de Contas a Receber */
+.titulo-secao {
+    background: #F4F7FB;
+    border-left: 4px solid #17365D;
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin-bottom: 22px;
+}
+
+.titulo-secao h2 {
+    color: #17365D;
+    margin: 0 0 6px;
+    font-size: 22px;
+}
+
+.titulo-secao p {
+    color: #718096;
+    margin: 0;
+    font-size: 13px;
+}
 
             .form-grid {
                 display: grid;
@@ -3918,14 +4120,22 @@ def contas_receber():
     <body>
         <div class="container">
 
-            <h1>Contas a Receber</h1>
+           <div class="topo-financeiro">
+    <div>
+        <h1>Contas a Receber</h1>
+        <p class="subtitulo">
+            Gerencie suas cobranças, clientes e recebimentos.
+        </p>
+    </div>
 
-            <p class="subtitulo">
-                Gerencie suas cobranças, clientes e recebimentos.
-            </p>
+    <a href="/" class="voltar-financeiro">← Voltar ao painel</a>
+</div>
 
             <div class="card">
-                <h2>Nova cobrança</h2>
+                <div class="titulo-secao">
+    <h2>Nova cobrança</h2>
+    <p>Registre novas cobranças e acompanhe os recebimentos da empresa.</p>
+</div>
 
                 <form method="POST">
                     <div class="form-grid">
@@ -3972,7 +4182,12 @@ def contas_receber():
             </div>
 
             <div class="card">
-                <h2>Cobranças cadastradas</h2>
+                <div class="titulo-secao">
+    <h2>Cobranças cadastradas</h2>
+    <p>
+        Consulte suas cobranças e acompanhe a situação dos recebimentos.
+    </p>
+</div>
 
                 <div class="tabela-container">
                     <table>
@@ -4036,7 +4251,7 @@ def contas_receber():
     </body>
     </html>
     """, clientes=clientes, registros=registros)
- 
+
 
 # ==========================================
 # CONTAS A PAGAR
@@ -4091,7 +4306,7 @@ def contas_pagar():
 
     conexao.close()
 
- 
+
     return render_template_string("""
     <!DOCTYPE html>
     <html lang="pt-br">
@@ -4127,6 +4342,46 @@ def contas_pagar():
                 color: #64748b;
                 margin-bottom: 28px;
             }
+            /* Cabeçalho padronizado - Contas a Pagar */
+.topo-financeiro {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 25px;
+    background: #DCE7F3;
+    padding: 22px;
+    border-left: 5px solid #17365D;
+    border-radius: 9px;
+}
+
+.topo-financeiro h1 {
+    color: #17365D;
+    margin: 0 0 6px;
+    font-size: 28px;
+}
+
+.topo-financeiro .subtitulo {
+    color: #718096;
+    margin: 0;
+    font-size: 14px;
+}
+
+.voltar-financeiro {
+    display: inline-block;
+    background: #FFFFFF;
+    color: #17365D;
+    padding: 11px 17px;
+    border: 1px solid #DCE3EC;
+    border-radius: 7px;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.voltar-financeiro:hover {
+    background: #EAF0F7;
+}
 
             .card {
                 background: white;
@@ -4135,6 +4390,27 @@ def contas_pagar():
                 margin-bottom: 25px;
                 box-shadow: 0 3px 12px rgba(0,0,0,0.04);
             }
+            /* Cabeçalhos internos de Contas a Pagar */
+.titulo-secao {
+    background: #F4F7FB;
+    border-left: 4px solid #17365D;
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin-bottom: 22px;
+}
+
+.titulo-secao h2 {
+    color: #17365D;
+    margin: 0 0 6px;
+    font-size: 22px;
+}
+
+.titulo-secao p {
+    color: #718096;
+    margin: 0;
+    font-size: 13px;
+}
+
 
             .form-grid {
                 display: grid;
@@ -4265,21 +4541,29 @@ def contas_pagar():
 
 .tabela-alertas td {
     color: #334155;
-}  
+}
         </style>
     </head>
 
     <body>
         <div class="container">
 
-            <h1>Contas a Pagar</h1>
+           <div class="topo-financeiro">
+    <div>
+        <h1>Contas a Pagar</h1>
+        <p class="subtitulo">
+            Gerencie suas despesas, fornecedores e pagamentos.
+        </p>
+    </div>
 
-            <p class="subtitulo">
-                Gerencie suas despesas, fornecedores e pagamentos.
-            </p>
+    <a href="/" class="voltar-financeiro">← Voltar ao painel</a>
+</div>
 
             <div class="card">
-                <h2>Nova despesa</h2>
+                <div class="titulo-secao">
+    <h2>Nova despesa</h2>
+    <p>Registre suas despesas e acompanhe os pagamentos da empresa.</p>
+</div>
 
                 <form method="POST">
                     <div class="form-grid">
@@ -4335,7 +4619,12 @@ def contas_pagar():
             </div>
 
             <div class="card">
-                <h2>Despesas cadastradas</h2>
+               <div class="titulo-secao">
+    <h2>Despesas cadastradas</h2>
+    <p>
+        Consulte suas despesas e acompanhe a situação dos pagamentos.
+    </p>
+</div>
 
                 <div class="tabela-container">
                     <table>
@@ -4401,7 +4690,7 @@ def contas_pagar():
     </body>
     </html>
     """, registros=registros)
-   
+
 # ==========================================
 # REGISTRAR PAGAMENTO
 # ==========================================
@@ -4496,14 +4785,49 @@ def fechamento_mensal():
 
         <div style="max-width:1100px;margin:auto;">
 
-            <div style="margin-bottom:28px;">
-                <h1 style="margin-bottom:8px;">
-                    Fechamento Mensal
-                </h1>
-                <p style="color:#64748b;">
-                    Acompanhe os resultados financeiros da empresa.
-                </p>
-            </div>
+            <div style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:15px;
+    background:#DCE7F3;
+    padding:22px;
+    border-left:5px solid #17365D;
+    border-radius:9px;
+    margin-bottom:25px;
+">
+    <div>
+        <h1 style="
+            color:#17365D;
+            font-size:28px;
+            margin:0 0 6px;
+        ">
+            Fechamento Mensal
+        </h1>
+
+        <p style="
+            color:#718096;
+            font-size:14px;
+            margin:0;
+        ">
+            Acompanhe os resultados financeiros da empresa.
+        </p>
+    </div>
+
+    <a href="/" style="
+        display:inline-block;
+        background:#FFFFFF;
+        color:#17365D;
+        padding:11px 17px;
+        border:1px solid #DCE3EC;
+        border-radius:7px;
+        font-weight:bold;
+        text-decoration:none;
+    ">
+        ← Voltar ao painel
+    </a>
+</div>
 
             <div style="
                 background:white;
@@ -4544,9 +4868,29 @@ def fechamento_mensal():
 
             </div>
 
-            <h2 style="margin-bottom:18px;">
-                Resumo financeiro
-            </h2>
+           <div style="
+    background:#F4F7FB;
+    border-left:4px solid #17365D;
+    border-radius:8px;
+    padding:16px 18px;
+    margin-bottom:22px;
+">
+    <h2 style="
+        color:#17365D;
+        margin:0 0 6px;
+        font-size:22px;
+    ">
+        Resumo financeiro
+    </h2>
+
+    <p style="
+        color:#718096;
+        margin:0;
+        font-size:13px;
+    ">
+        Confira os resultados financeiros do mês selecionado.
+    </p>
+</div>
 
             <div style="
                 display:grid;
@@ -4596,9 +4940,29 @@ def fechamento_mensal():
 
             </div>
 
-            <h2 style="margin-bottom:18px;">
-                Contas pendentes
-            </h2>
+          <div style="
+    background:#F4F7FB;
+    border-left:4px solid #17365D;
+    border-radius:8px;
+    padding:16px 18px;
+    margin-bottom:22px;
+">
+    <h2 style="
+        color:#17365D;
+        margin:0 0 6px;
+        font-size:22px;
+    ">
+        Contas pendentes
+    </h2>
+
+    <p style="
+        color:#718096;
+        margin:0;
+        font-size:13px;
+    ">
+        Acompanhe os valores que ainda precisam ser recebidos ou pagos.
+    </p>
+</div>
 
             <div style="
                 display:grid;
@@ -4739,12 +5103,49 @@ def fechamento_anual():
 
         <div style="max-width:1100px;margin:auto;">
 
-            <h1>Fechamento Anual</h1>
+         <div style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:15px;
+    background:#DCE7F3;
+    padding:22px;
+    border-left:5px solid #17365D;
+    border-radius:9px;
+    margin-bottom:25px;
+">
+    <div>
+        <h1 style="
+            color:#17365D;
+            font-size:28px;
+            margin:0 0 6px;
+        ">
+            Fechamento Anual
+        </h1>
 
-            <p style="color:#64748b;margin:10px 0 28px;">
-                Acompanhe os resultados financeiros do ano.
-            </p>
+        <p style="
+            color:#718096;
+            font-size:14px;
+            margin:0;
+        ">
+            Acompanhe os resultados financeiros do ano.
+        </p>
+    </div>
 
+    <a href="/" style="
+        display:inline-block;
+        background:#FFFFFF;
+        color:#17365D;
+        padding:11px 17px;
+        border:1px solid #DCE3EC;
+        border-radius:7px;
+        font-weight:bold;
+        text-decoration:none;
+    ">
+        ← Voltar ao painel
+    </a>
+</div>
             <div style="
                 background:white;
                 padding:24px;
@@ -4778,7 +5179,29 @@ def fechamento_anual():
 
             </div>
 
-            <h2 style="margin-bottom:18px;">Resumo do ano</h2>
+            <div style="
+    background:#F4F7FB;
+    border-left:4px solid #17365D;
+    border-radius:8px;
+    padding:16px 18px;
+    margin-bottom:22px;
+">
+    <h2 style="
+        color:#17365D;
+        margin:0 0 6px;
+        font-size:22px;
+    ">
+        Resumo do ano
+    </h2>
+
+    <p style="
+        color:#718096;
+        margin:0;
+        font-size:13px;
+    ">
+        Confira os resultados financeiros do ano selecionado.
+    </p>
+</div>
 
             <div style="
                 display:grid;
@@ -4810,7 +5233,29 @@ def fechamento_anual():
 
             </div>
 
-            <h2 style="margin-bottom:18px;">Contas pendentes</h2>
+            <div style="
+    background:#F4F7FB;
+    border-left:4px solid #17365D;
+    border-radius:8px;
+    padding:16px 18px;
+    margin-bottom:22px;
+">
+    <h2 style="
+        color:#17365D;
+        margin:0 0 6px;
+        font-size:22px;
+    ">
+        Contas pendentes
+    </h2>
+
+    <p style="
+        color:#718096;
+        margin:0;
+        font-size:13px;
+    ">
+        Acompanhe os valores que ainda precisam ser recebidos ou pagos.
+    </p>
+</div>
 
             <div style="
                 display:grid;
@@ -4831,7 +5276,29 @@ def fechamento_anual():
 
             </div>
 
-            <h2 style="margin-bottom:18px;">Resultado por mês</h2>
+            <div style="
+    background:#F4F7FB;
+    border-left:4px solid #17365D;
+    border-radius:8px;
+    padding:16px 18px;
+    margin-bottom:22px;
+">
+    <h2 style="
+        color:#17365D;
+        margin:0 0 6px;
+        font-size:22px;
+    ">
+        Resultado por mês
+    </h2>
+
+    <p style="
+        color:#718096;
+        margin:0;
+        font-size:13px;
+    ">
+        Acompanhe os recebimentos, pagamentos e resultados de cada mês.
+    </p>
+</div>
 
             <div style="background:white;padding:20px;border-radius:14px;overflow-x:auto;">
 
@@ -5001,6 +5468,46 @@ def fluxo_caixa():
                 color: #64748b;
                 margin-bottom: 28px;
             }
+            /* Cabeçalho principal do Fluxo de Caixa */
+.topo-fluxo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 25px;
+    background: #DCE7F3;
+    padding: 22px;
+    border-left: 5px solid #17365D;
+    border-radius: 9px;
+}
+
+.topo-fluxo h1 {
+    color: #17365D;
+    margin: 0 0 6px;
+    font-size: 28px;
+}
+
+.topo-fluxo .subtitulo {
+    color: #718096;
+    margin: 0;
+    font-size: 14px;
+}
+
+.voltar-fluxo {
+    display: inline-block;
+    background: #FFFFFF;
+    color: #17365D;
+    padding: 11px 17px;
+    border: 1px solid #DCE3EC;
+    border-radius: 7px;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.voltar-fluxo:hover {
+    background: #EAF0F7;
+}
 
             .filtro {
                 background: white;
@@ -5133,11 +5640,16 @@ def fluxo_caixa():
     <body>
         <div class="container">
 
-            <h1>Fluxo de Caixa</h1>
+           <div class="topo-fluxo">
+    <div>
+        <h1>Fluxo de Caixa</h1>
+        <p class="subtitulo">
+            Acompanhe as entradas, saídas e resultados financeiros da empresa.
+        </p>
+    </div>
 
-            <p class="subtitulo">
-                Acompanhe as entradas, saídas e resultados financeiros da empresa.
-            </p>
+    <a href="/" class="voltar-fluxo">← Voltar ao painel</a>
+</div>
 
             <form method="GET" class="filtro">
 
@@ -5178,7 +5690,29 @@ def fluxo_caixa():
 
             <div class="card">
 
-                <h2>Movimentações financeiras</h2>
+              <div style="
+    background:#DCE7F3;
+    border-left:4px solid #17365D;
+    border-radius:8px;
+    padding:16px 18px;
+    margin-bottom:22px;
+">
+    <h2 style="
+        color:#17365D;
+        margin:0 0 6px;
+        font-size:22px;
+    ">
+        Movimentações financeiras
+    </h2>
+
+    <p style="
+        color:#718096;
+        margin:0;
+        font-size:13px;
+    ">
+        Consulte as entradas e saídas financeiras do período selecionado.
+    </p>
+</div>
 
                 <div class="tabela-container">
 
