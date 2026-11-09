@@ -3067,6 +3067,30 @@ def locacoes():
         data_prevista = request.form["data_prevista"]
         valor = request.form["valor"]
         observacoes = request.form["observacoes"]
+                # Verifica se o equipamento está disponível
+        equipamento = cursor.execute("""
+            SELECT id, situacao
+            FROM equipamentos
+            WHERE id = ? AND empresa_id = 1
+        """, (equipamento_id,)).fetchone()
+
+        # Verifica se já existe uma locação ativa
+        locacao_ativa = cursor.execute("""
+            SELECT id
+            FROM locacoes
+            WHERE empresa_id = 1
+              AND equipamento_id = ?
+              AND situacao = 'Ativa'
+            LIMIT 1
+        """, (equipamento_id,)).fetchone()
+
+        if (
+            equipamento is None
+            or equipamento["situacao"] != "Disponível"
+            or locacao_ativa is not None
+        ):
+            conexao.close()
+            return "Este equipamento não está disponível para locação.", 409
 
         cursor.execute("""
             INSERT INTO locacoes (
@@ -3081,17 +3105,22 @@ def locacoes():
             modalidade, data_retirada,
             data_prevista, valor, observacoes
         ))
+        # Identifica a locação que acabou de ser cadastrada
+        locacao_id = cursor.lastrowid
 
         cursor.execute("""
             UPDATE equipamentos
             SET situacao = 'Alugado'
-            WHERE id = ? AND empresa_id = 1
+            WHERE id = ?
+              AND empresa_id = 1
+              AND situacao = 'Disponível'
         """, (equipamento_id,))
 
-
-        # Identifica a locação que acabou de ser cadastrada
-        locacao_id = cursor.lastrowid
-
+        # Confirma que o equipamento foi reservado
+        if cursor.rowcount != 1:
+            conexao.rollback()
+            conexao.close()
+            return "Este equipamento não está disponível para locação.", 409
         # Cria a cobrança vinculada à locação
         from datetime import date
 
