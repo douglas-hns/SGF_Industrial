@@ -158,6 +158,30 @@ def criar_tabelas():
         )
     """)
     
+    # Tabela de usuarios do SGF Industrial
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS usuarios (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            empresa_id INTEGER NOT NULL,
+            nome TEXT NOT NULL,
+            email TEXT NOT NULL COLLATE NOCASE,
+            senha_hash TEXT NOT NULL,
+            perfil TEXT NOT NULL CHECK (
+                perfil IN (
+                    'Proprietario',
+                    'Financeiro',
+                    'Logistica',
+                    'Comercial'
+                )
+            ),
+            ativo INTEGER NOT NULL DEFAULT 1
+                CHECK (ativo IN (0, 1)),
+            criado_em TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (empresa_id) REFERENCES empresas(id),
+            UNIQUE (empresa_id, email)
+        )
+    """)
+
     conexao.commit()
     conexao.close()
 
