@@ -1290,7 +1290,7 @@ def editar_equipamento(id):
     if equipamento is None:
         return "Equipamento não encontrado.", 404
 
-       return render_template_string("""
+    return render_template_string("""
     <!DOCTYPE html>
     <html lang="pt-BR">
     <head>
