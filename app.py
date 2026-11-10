@@ -3209,7 +3209,20 @@ def locacoes():
         data_prevista = request.form["data_prevista"]
         valor = request.form["valor"]
         observacoes = request.form["observacoes"]
-                # Verifica se o equipamento está disponível
+                        # Inicia uma transação protegida no SQLite
+        import sqlite3
+
+        try:
+            cursor.execute("BEGIN IMMEDIATE")
+        except sqlite3.OperationalError as erro:
+            conexao.close()
+
+            if "locked" in str(erro).lower() or "busy" in str(erro).lower():
+                return "O sistema está ocupado. Tente novamente em alguns instantes.", 503
+
+            raise
+
+        # Verifica se o equipamento está disponível
         equipamento = cursor.execute("""
             SELECT id, situacao
             FROM equipamentos
