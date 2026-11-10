@@ -1290,54 +1290,275 @@ def editar_equipamento(id):
     if equipamento is None:
         return "Equipamento não encontrado.", 404
 
-    return render_template_string("""
-        <h1>Editar equipamento</h1>
+       return render_template_string("""
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Editar Equipamento | SGF Industrial</title>
 
-        <form method="POST">
+        <style>
+            * {
+                box-sizing: border-box;
+            }
 
-            <p>Nome:</p>
-            <input name="nome" value="{{ equipamento['nome'] }}" required>
+            body {
+                margin: 0;
+                padding: 35px 20px;
+                font-family: Arial, sans-serif;
+                background: #F1F4F9;
+                color: #243449;
+            }
 
-            <p>Marca:</p>
-            <input name="marca" value="{{ equipamento['marca'] or '' }}">
+            .container {
+                max-width: 1050px;
+                margin: 0 auto;
+            }
 
-            <p>Modelo:</p>
-            <input name="modelo" value="{{ equipamento['modelo'] or '' }}">
+            .cabecalho {
+                background: #E5EDF7;
+                border-left: 6px solid #17365D;
+                padding: 24px 28px;
+                border-radius: 10px;
+                margin-bottom: 24px;
+            }
 
-            <p>Número de série:</p>
-            <input name="numero_serie" value="{{ equipamento['numero_serie'] or '' }}">
+            .cabecalho h1 {
+                margin: 0 0 8px;
+                color: #17365D;
+                font-size: 27px;
+            }
 
-            <p>Tipo de gás:</p>
-            <input name="tipo_gas" value="{{ equipamento['tipo_gas'] or '' }}">
+            .cabecalho p {
+                margin: 0;
+                color: #64748B;
+                font-size: 14px;
+            }
 
-            <p>Situação:</p>
-            <select name="situacao">
-                {% for opcao in ['Disponível', 'Alugado', 'Em manutenção'] %}
-                    <option value="{{ opcao }}"
-                    {% if equipamento['situacao'] == opcao %}selected{% endif %}>
-                        {{ opcao }}
-                    </option>
-                {% endfor %}
-            </select>
+            .card {
+                background: white;
+                border: 1px solid #E0E6EF;
+                border-radius: 12px;
+                padding: 30px;
+                box-shadow: 0 4px 15px rgba(20, 45, 75, 0.05);
+            }
 
-            <p>Valor da diária:</p>
-            <input type="number" step="0.01" min="0" name="valor_diaria"
-                   value="{{ equipamento['valor_diaria'] }}">
+            .card h2 {
+                color: #17365D;
+                font-size: 19px;
+                margin: 0 0 8px;
+            }
 
-            <p>Valor semanal:</p>
-            <input type="number" step="0.01" min="0" name="valor_semanal"
-                   value="{{ equipamento['valor_semanal'] }}">
+            .descricao {
+                color: #718096;
+                font-size: 13px;
+                margin-bottom: 25px;
+            }
 
-            <p>Valor mensal:</p>
-            <input type="number" step="0.01" min="0" name="valor_mensal"
-                   value="{{ equipamento['valor_mensal'] }}">
+            .form-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 20px;
+            }
 
-            <br><br>
-            <button type="submit">Salvar alterações</button>
+            .campo {
+                display: flex;
+                flex-direction: column;
+            }
 
-        </form>
+            .campo-completo {
+                grid-column: 1 / -1;
+            }
 
-        <p><a href="/equipamentos">Voltar aos equipamentos</a></p>
+            label {
+                font-size: 13px;
+                font-weight: bold;
+                color: #34465D;
+                margin-bottom: 8px;
+            }
+
+            input, select {
+                width: 100%;
+                padding: 12px 13px;
+                border: 1px solid #D5DFEA;
+                border-radius: 7px;
+                font-family: inherit;
+                font-size: 14px;
+                color: #243449;
+                background: #FFFFFF;
+            }
+
+            input:focus, select:focus {
+                outline: none;
+                border-color: #2474B8;
+                box-shadow: 0 0 0 3px rgba(36, 116, 184, 0.10);
+            }
+
+            .acoes {
+                display: flex;
+                gap: 12px;
+                flex-wrap: wrap;
+                margin-top: 30px;
+                padding-top: 22px;
+                border-top: 1px solid #EDF0F4;
+            }
+
+            .btn-salvar {
+                border: none;
+                background: #17365D;
+                color: white;
+                padding: 13px 23px;
+                font-size: 14px;
+                font-weight: bold;
+                border-radius: 7px;
+                cursor: pointer;
+            }
+
+            .btn-salvar:hover {
+                background: #2474B8;
+            }
+
+            .btn-cancelar {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                background: #F1F4F9;
+                border: 1px solid #D5DFEA;
+                color: #34465D;
+                padding: 12px 23px;
+                font-size: 14px;
+                font-weight: bold;
+                border-radius: 7px;
+                text-decoration: none;
+            }
+
+            .btn-cancelar:hover {
+                background: #E2E8F0;
+            }
+
+            @media (max-width: 650px) {
+                body {
+                    padding: 15px;
+                }
+
+                .card {
+                    padding: 20px;
+                }
+
+                .form-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .campo-completo {
+                    grid-column: auto;
+                }
+
+                .cabecalho h1 {
+                    font-size: 23px;
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="container">
+
+            <div class="cabecalho">
+                <h1>Editar Equipamento</h1>
+                <p>Atualize as informações do equipamento cadastrado.</p>
+            </div>
+
+            <div class="card">
+                <h2>Informações do equipamento</h2>
+                <p class="descricao">
+                    Confira os dados abaixo e realize as alterações necessárias.
+                </p>
+
+                <form method="POST">
+                    <div class="form-grid">
+
+                        <div class="campo campo-completo">
+                            <label for="nome">Nome do equipamento *</label>
+                            <input id="nome" name="nome"
+                                   value="{{ equipamento['nome'] }}"
+                                   required>
+                        </div>
+
+                        <div class="campo">
+                            <label for="marca">Marca</label>
+                            <input id="marca" name="marca"
+                                   value="{{ equipamento['marca'] or '' }}">
+                        </div>
+
+                        <div class="campo">
+                            <label for="modelo">Modelo</label>
+                            <input id="modelo" name="modelo"
+                                   value="{{ equipamento['modelo'] or '' }}">
+                        </div>
+
+                        <div class="campo">
+                            <label for="numero_serie">Número de série</label>
+                            <input id="numero_serie" name="numero_serie"
+                                   value="{{ equipamento['numero_serie'] or '' }}">
+                        </div>
+
+                        <div class="campo">
+                            <label for="tipo_gas">Tipo de gás</label>
+                            <input id="tipo_gas" name="tipo_gas"
+                                   value="{{ equipamento['tipo_gas'] or '' }}">
+                        </div>
+
+                        <div class="campo campo-completo">
+                            <label for="situacao">Situação do equipamento</label>
+                            <select id="situacao" name="situacao">
+                                {% for opcao in ['Disponível', 'Alugado', 'Em manutenção'] %}
+                                    <option value="{{ opcao }}"
+                                        {% if equipamento['situacao'] == opcao %}selected{% endif %}>
+                                        {{ opcao }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="campo">
+                            <label for="valor_diaria">Valor da diária (R$)</label>
+                            <input id="valor_diaria" type="number"
+                                   step="0.01" min="0" name="valor_diaria"
+                                   value="{{ equipamento['valor_diaria'] or 0 }}">
+                        </div>
+
+                        <div class="campo">
+                            <label for="valor_semanal">Valor semanal (R$)</label>
+                            <input id="valor_semanal" type="number"
+                                   step="0.01" min="0" name="valor_semanal"
+                                   value="{{ equipamento['valor_semanal'] or 0 }}">
+                        </div>
+
+                        <div class="campo">
+                            <label for="valor_mensal">Valor mensal (R$)</label>
+                            <input id="valor_mensal" type="number"
+                                   step="0.01" min="0" name="valor_mensal"
+                                   value="{{ equipamento['valor_mensal'] or 0 }}">
+                        </div>
+
+                    </div>
+
+                    <div class="acoes">
+                        <button type="submit" class="btn-salvar">
+                            Salvar alterações
+                        </button>
+
+                        <a href="/equipamentos" class="btn-cancelar">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </body>
+    </html>
     """, equipamento=equipamento)
 
 # ==========================================
