@@ -1,12 +1,83 @@
-
-from flask import Flask, render_template_string, request, redirect, url_for
+from flask import Flask, render_template_string, request, redirect, url_for, session
+from werkzeug.security import check_password_hash
+from pathlib import Path
 from banco import conectar, criar_tabelas
 from datetime import date
 
 app = Flask(__name__)
 
+app.secret_key = (
+    Path.home() / ".sgf_industrial_secret_key"
+).read_text(encoding="utf-8").strip()
+
 # Prepara o banco de dados
 criar_tabelas()
+
+
+# ==========================================
+# PROTECAO DE ACESSO AO SGF
+# ==========================================
+
+@app.before_request
+def proteger_paginas():
+
+    # Permite acessar o login e os arquivos visuais
+    if request.endpoint in ("login", "static"):
+        return
+
+    usuario_id = session.get("usuario_id")
+    empresa_id = session.get("empresa_id")
+
+    # Sem sessao, exige login
+    if not usuario_id or not empresa_id:
+        session.clear()
+        return redirect(url_for("login"))
+
+    conexao = conectar()
+
+    try:
+        usuario = conexao.execute("""
+            SELECT id, nome, perfil
+            FROM usuarios
+            WHERE id = ?
+              AND empresa_id = ?
+              AND ativo = 1
+        """, (usuario_id, empresa_id)).fetchone()
+    finally:
+        conexao.close()
+
+    # Bloqueia usuarios removidos ou desativados
+    if usuario is None:
+        session.clear()
+        return redirect(url_for("login"))
+
+    session["nome"] = usuario["nome"]
+    session["perfil"] = usuario["perfil"]
+
+
+    # Controle de permissoes por perfil
+    perfil = usuario["perfil"]
+
+    # Proprietario e Financeiro: acesso completo
+    if perfil in ("Proprietario", "Financeiro"):
+        return
+
+    # Todos os usuarios podem encerrar a sessao
+    if request.endpoint == "logout":
+        return
+
+    # Logistica: apenas produtos e movimentacoes de estoque
+    if perfil == "Logistica":
+        if request.endpoint in ("produtos", "movimentacoes_estoque"):
+            return
+
+    # Comercial: acesso sera liberado quando criarmos
+    # o modulo de vendas do mes
+
+    # Bloqueia todas as demais paginas
+    return "Acesso negado. Voce nao tem permissao para acessar esta pagina.", 403
+
+
 
 
 # ==========================================
@@ -3114,6 +3185,28 @@ def inicio():
                     <a href="#">📊 Relatórios</a>
                     <a href="#">🏢 Empresas</a>
                     <a href="#">⚙ Configurações</a>
+
+               
+<form method="POST"
+      action="{{ url_for('logout') }}"
+      style="display: inline-flex; margin: 0;">
+
+    <button type="submit" style="
+        background: #17365D;
+        color: white;
+        border: 1px solid #2474B8;
+        border-radius: 7px;
+        padding: 10px 16px;
+        font-size: 13px;
+        font-weight: bold;
+        font-family: inherit;
+        cursor: pointer;
+    ">
+        🚪 Sair do sistema
+    </button>
+
+</form>
+     
                 </nav>
 
             </aside>
@@ -6012,6 +6105,344 @@ def fluxo_caixa():
     mes_selecionado=mes_selecionado
     )
 
+
+
+# ==========================================
+# LOGIN DO SGF INDUSTRIAL
+# ==========================================
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    erro = None
+
+    if request.method == "POST":
+        email = request.form.get("email", "").strip()
+        senha = request.form.get("senha", "")
+
+        conexao = conectar()
+        try:
+            usuario = conexao.execute("""
+                SELECT id, empresa_id, nome, perfil, senha_hash
+                FROM usuarios
+                WHERE empresa_id = 1
+                  AND email = ? COLLATE NOCASE
+                  AND ativo = 1
+            """, (email,)).fetchone()
+        finally:
+            conexao.close()
+
+        if usuario and check_password_hash(usuario["senha_hash"], senha):
+            session.clear()
+            session["usuario_id"] = usuario["id"]
+            session["empresa_id"] = usuario["empresa_id"]
+            session["perfil"] = usuario["perfil"]
+            session["nome"] = usuario["nome"]
+            
+            # Logistica entra diretamente no estoque
+            if usuario["perfil"] == "Logistica":
+                return redirect(url_for("produtos"))
+
+            # Proprietario e Financeiro entram no painel principal
+            return redirect(url_for("inicio"))
+
+
+        erro = "Email ou senha incorretos."
+
+    return render_template_string("""
+        <!DOCTYPE html>
+        <html lang="pt-BR">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>Login | SGF Industrial</title>
+            <style>
+                * { box-sizing: border-box; }
+                body {
+                    margin: 0;
+                    min-height: 100vh;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    
+
+background: #F1F4F9 url("/static/sgf_fundo_corporativo_limpo.png") center center / cover no-repeat fixed;
+
+
+                    font-family: Arial, sans-serif;
+                }
+                
+.card {
+    width: 90%;
+    max-width: 480px;
+    padding: 35px;
+background: transparent;
+backdrop-filter: none;
+-webkit-backdrop-filter: none;
+border: none;
+box-shadow: none;
+   
+    box-shadow: 0 12px 35px rgba(10, 40, 75, 0.18);
+}
+
+
+h1 {
+    background: #E5EDF7;
+    border-left: 6px solid #17365D;
+    color: #17365D;
+    padding: 20px 22px;
+    border-radius: 8px;
+    font-size: 26px;
+    margin: 0 0 18px;
+}
+
+                p { color: #718096; }
+                label {
+                    display: block;
+                    margin: 18px 0 7px;
+                    color: #34465D;
+                    font-weight: bold;
+                }
+                input {
+                    width: 100%;
+                    padding: 12px;
+                    border: 1px solid #D5DFEA;
+                    border-radius: 7px;
+                    font-size: 14px;
+                }
+                button {
+                    width: 100%;
+                    margin-top: 24px;
+                    padding: 13px;
+                    background: #17365D;
+                    color: white;
+                    border: none;
+                    border-radius: 7px;
+                    font-weight: bold;
+                    cursor: pointer;
+                }
+                .erro { color: #B42318; }
+            </style>
+        </head>
+        <body>
+            <div class="card">
+                
+
+
+<div style="
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 18px 10px;
+    border-radius: 25px;
+   
+background: radial-gradient(
+    ellipse at center,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(255, 255, 255, 1) 40%,
+    rgba(255, 255, 255, 0.98) 60%,
+    rgba(255, 255, 255, 0.70) 80%,
+    rgba(255, 255, 255, 0) 100%
+);
+
+border-radius: 18px;
+">
+
+    <img
+        src="/static/sgf_logo_corporativo_transparente.png"
+        alt="SGF - Gestão Financeira Empresarial"
+        style="
+            display: block;
+            width: 100%;
+            max-width: 350px;
+            height: auto;
+            margin: 0 auto;
+        "
+    >
+</div>
+
+
+                <p>Acesse sua conta para continuar.</p>
+
+                {% if erro %}
+                    <p class="erro">{{ erro }}</p>
+                {% endif %}
+
+                <form method="POST">
+                 
+<div style="
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 50px;
+    margin: 18px 0 12px;
+    padding: 0 15px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid #D5DFEA;
+    border-radius: 10px;
+">
+    <svg width="22" height="22"
+         viewBox="0 0 24 24"
+         fill="none"
+         stroke="#17365D"
+         stroke-width="2"
+         stroke-linecap="round"
+         stroke-linejoin="round">
+        <rect x="2" y="4" width="20" height="16" rx="2"/>
+        <path d="m2 6 10 7 10-7"/>
+    </svg>
+
+    <input
+        id="email"
+        name="email"
+        type="email"
+        placeholder="E-mail"
+        aria-label="E-mail"
+        autocomplete="username"
+        required
+        autofocus
+        style="
+            flex: 1;
+            width: 100%;
+            padding: 0;
+            border: none;
+            outline: none;
+            box-shadow: none;
+            background: transparent;
+            font-size: 16px;
+            color: #17365D;
+        "
+    >
+</div>
+   
+
+              
+<div style="
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 50px;
+    margin: 12px 0;
+    padding: 0 15px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid #D5DFEA;
+    border-radius: 10px;
+">
+    <!-- Icone do cadeado -->
+    <svg width="22" height="22"
+         viewBox="0 0 24 24"
+         fill="none"
+         stroke="#17365D"
+         stroke-width="2"
+         stroke-linecap="round"
+         stroke-linejoin="round">
+        <rect x="4" y="10" width="16" height="12" rx="2"/>
+        <path d="M8 10V7a4 4 0 0 1 8 0v3"/>
+    </svg>
+
+    <input
+        id="senha"
+        name="senha"
+        type="password"
+        placeholder="Senha"
+        aria-label="Senha"
+        autocomplete="current-password"
+        required
+        style="
+            flex: 1;
+            min-width: 0;
+            padding: 0;
+            border: none;
+            outline: none;
+            box-shadow: none;
+            background: transparent;
+            font-size: 16px;
+            color: #17365D;
+        "
+    >
+
+    <!-- Mostrar ou ocultar senha -->
+    <button
+        type="button"
+        aria-label="Mostrar senha"
+        title="Mostrar ou ocultar senha"
+        onclick="
+            var campo = document.getElementById('senha');
+            campo.type = campo.type === 'password' ? 'text' : 'password';
+            this.setAttribute('aria-label',
+                campo.type === 'password' ? 'Mostrar senha' : 'Ocultar senha');
+        "
+        style="
+            width: auto;
+            margin: 0;
+            padding: 4px;
+            background: transparent;
+            border: none;
+            color: #17365D;
+            cursor: pointer;
+        "
+    >
+        <svg width="23" height="23"
+             viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="2"
+             stroke-linecap="round"
+             stroke-linejoin="round">
+            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/>
+            <circle cx="12" cy="12" r="3"/>
+        </svg>
+    </button>
+</div>
+     
+
+                  
+<button type="submit" style="
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    height: 54px;
+    margin-top: 22px;
+    padding: 12px 20px;
+    background: linear-gradient(180deg, #14518A, #082E59);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    font-family: Arial, sans-serif;
+    box-shadow: 0 5px 12px rgba(10, 40, 75, 0.18);
+    cursor: pointer;
+">
+    <svg width="23" height="23"
+         viewBox="0 0 24 24"
+         fill="none"
+         stroke="currentColor"
+         stroke-width="2"
+         stroke-linecap="round"
+         stroke-linejoin="round">
+        <path d="M10 17l5-5-5-5"/>
+        <path d="M15 12H3"/>
+        <path d="M12 3h6a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3h-6"/>
+    </svg>
+
+    <span>Entrar no sistema</span>
+</button>
+  
+                </form>
+            </div>
+        </body>
+        </html>
+    """, erro=erro)
+
+# ==========================================
+# SAIR DO SISTEMA
+# ==========================================
+
+@app.route("/logout", methods=["POST"])
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
 
 
 if __name__ == "__main__":
