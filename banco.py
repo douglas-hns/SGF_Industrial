@@ -182,6 +182,23 @@ def criar_tabelas():
         )
     """)
 
+
+    # Tabela de vendas
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS vendas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            empresa_id INTEGER NOT NULL,
+            cliente_id INTEGER,
+            data_venda TEXT NOT NULL,
+            valor_total REAL NOT NULL DEFAULT 0,
+            situacao TEXT NOT NULL DEFAULT 'Concluida',
+            observacoes TEXT,
+            FOREIGN KEY (empresa_id) REFERENCES empresas(id),
+            FOREIGN KEY (cliente_id) REFERENCES clientes(id)
+        )
+    """)
+
+
     conexao.commit()
     conexao.close()
 
