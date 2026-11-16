@@ -71,8 +71,11 @@ def proteger_paginas():
         if request.endpoint in ("produtos", "movimentacoes_estoque"):
             return
 
-    # Comercial: acesso sera liberado quando criarmos
-    # o modulo de vendas do mes
+    
+    # Comercial: apenas consulta de vendas
+    if perfil == "Comercial":
+        if request.endpoint == "vendas" and request.method == "GET":
+            return
 
     # Bloqueia todas as demais paginas
     return "Acesso negado. Voce nao tem permissao para acessar esta pagina.", 403
@@ -2848,11 +2851,11 @@ tbody tr:hover {
             </div>
         </body>
         </html>
+   
     """,
         lista_produtos=lista_produtos,
-
+        historico=historico,
     )
-
 
 # ==========================================
 # PAINEL PRINCIPAL
@@ -3175,6 +3178,7 @@ def inicio():
     <a href="/clientes">👥 Clientes</a>
     <a href="/equipamentos">🔧 Equipamentos</a>
     <a href="/produtos">📦 Produtos</a>
+    <a href="/vendas">🛒 Vendas</a>
     <a href="/movimentacoes-estoque">📊 Movimentações de estoque</a>
     <a href="/fluxo-caixa">💰 Fluxo de caixa</a>
     <a href="/contas-pagar">📤 Contas a pagar</a>
@@ -6443,6 +6447,519 @@ border-radius: 18px;
 def logout():
     session.clear()
     return redirect(url_for("login"))
+
+
+# ==========================================
+# VENDAS DO MES
+# ==========================================
+
+
+@app.route("/vendas", methods=["GET", "POST"])
+def vendas():
+
+    mes_atual = date.today().strftime("%Y-%m")
+    empresa_id = session["empresa_id"]
+
+   
+    # Registro seguro de uma venda
+    if request.method == "POST":
+        from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+        from hmac import compare_digest
+
+        token = request.form.get("csrf_token", "")
+        token_esperado = session.get("csrf_vendas", "")
+
+        if not token or not token_esperado or not compare_digest(
+            token, token_esperado
+        ):
+            return "Solicitacao de venda nao autorizada.", 403
+
+        try:
+            cliente_id = int(request.form.get("cliente_id", ""))
+            produto_id = int(request.form.get("produto_id", ""))
+            quantidade = int(request.form.get("quantidade", ""))
+        except (ValueError, TypeError):
+            return "Cliente, produto ou quantidade invalida.", 400
+
+        if cliente_id <= 0 or produto_id <= 0 or quantidade <= 0:
+            return "Informe dados validos para a venda.", 400
+
+        conexao_venda = conectar()
+
+        try:
+            # Garante que as operacoes sejam feitas juntas
+            conexao_venda.execute("BEGIN IMMEDIATE")
+
+            cliente = conexao_venda.execute("""
+                SELECT id FROM clientes
+                WHERE id = ? AND empresa_id = ?
+            """, (cliente_id, empresa_id)).fetchone()
+
+            if cliente is None:
+                raise ValueError("Cliente nao encontrado.")
+
+            produto = conexao_venda.execute("""
+                SELECT id, nome, preco_venda, quantidade_estoque
+                FROM produtos
+                WHERE id = ? AND empresa_id = ?
+            """, (produto_id, empresa_id)).fetchone()
+
+            if produto is None:
+                raise ValueError("Produto nao encontrado.")
+
+            if quantidade > produto["quantidade_estoque"]:
+                raise ValueError("Estoque insuficiente.")
+
+            try:
+                preco = Decimal(str(produto["preco_venda"]))
+                if not preco.is_finite() or preco < 0:
+                    raise InvalidOperation
+                preco = preco.quantize(
+                    Decimal("0.01"), rounding=ROUND_HALF_UP
+                )
+            except (InvalidOperation, TypeError):
+                raise ValueError("Preco do produto invalido.")
+
+            total = preco * quantidade
+            data_venda = date.today().isoformat()
+
+            # Desconta o estoque somente se houver saldo
+            atualizacao = conexao_venda.execute("""
+                UPDATE produtos
+                SET quantidade_estoque = quantidade_estoque - ?
+                WHERE id = ?
+                  AND empresa_id = ?
+                  AND quantidade_estoque >= ?
+            """, (quantidade, produto_id, empresa_id, quantidade))
+
+            if atualizacao.rowcount != 1:
+                raise ValueError("Estoque insuficiente.")
+
+            # Registra a venda
+            registro = conexao_venda.execute("""
+                INSERT INTO vendas
+                    (empresa_id, cliente_id, data_venda,
+                     valor_total, situacao)
+                VALUES (?, ?, ?, ?, 'Concluida')
+            """, (
+                empresa_id, cliente_id, data_venda, float(total)
+            ))
+
+            venda_id = registro.lastrowid
+
+            # Registra o produto vendido
+            conexao_venda.execute("""
+                INSERT INTO itens_venda
+                    (empresa_id, venda_id, produto_id,
+                     quantidade, preco_unitario, valor_total)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (
+                empresa_id, venda_id, produto_id,
+                quantidade, float(preco), float(total)
+            ))
+
+            # Registra a saida no historico do estoque
+            conexao_venda.execute("""
+                INSERT INTO movimentacoes_estoque
+                    (empresa_id, produto_id, tipo,
+                     quantidade, motivo, data_movimentacao)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (
+                empresa_id, produto_id, "Saída",
+                quantidade, f"Venda #{venda_id}", data_venda
+            ))
+
+            conexao_venda.commit()
+
+        except ValueError as erro:
+            conexao_venda.rollback()
+            return f"Venda nao registrada: {erro}", 400
+
+        except Exception:
+            conexao_venda.rollback()
+            raise
+
+        finally:
+            conexao_venda.close()
+
+        return redirect(url_for("vendas"))
+
+    # Prepara protecao para o formulario de vendas
+    if not session.get("csrf_vendas"):
+        from secrets import token_urlsafe
+        session["csrf_vendas"] = token_urlsafe(32)
+ 
+
+    conexao = conectar()
+
+    try:
+        lista_vendas = conexao.execute("""
+            SELECT
+                v.id,
+                v.data_venda,
+                v.valor_total,
+                v.situacao,
+             
+                COALESCE(c.nome, 'Nao informado') AS cliente,
+                COALESCE((
+                    SELECT GROUP_CONCAT(
+                        COALESCE(p.nome, 'Produto nao encontrado')
+                        || ' - ' || iv.quantidade || ' un.',
+                        ', '
+                    )
+                    FROM itens_venda iv
+                    LEFT JOIN produtos p
+                        ON p.id = iv.produto_id
+                        AND p.empresa_id = iv.empresa_id
+                    WHERE iv.venda_id = v.id
+                      AND iv.empresa_id = v.empresa_id
+                ), 'Sem itens') AS itens
+   
+            FROM vendas v
+            LEFT JOIN clientes c
+                ON c.id = v.cliente_id
+                AND c.empresa_id = v.empresa_id
+            WHERE v.empresa_id = ?
+              AND substr(v.data_venda, 1, 7) = ?
+            ORDER BY v.data_venda DESC, v.id DESC
+        """, (empresa_id, mes_atual)).fetchall()
+
+     
+        # Clientes disponíveis para venda
+        lista_clientes = conexao.execute("""
+            SELECT id, nome
+            FROM clientes
+            WHERE empresa_id = ?
+            ORDER BY nome
+        """, (empresa_id,)).fetchall()
+
+        # Produtos disponíveis para venda
+        lista_produtos = conexao.execute("""
+            SELECT id, codigo, nome, preco_venda,
+                   quantidade_estoque
+            FROM produtos
+            WHERE empresa_id = ?
+            ORDER BY nome
+        """, (empresa_id,)).fetchall()
+   
+
+    finally:
+        conexao.close()
+
+    return render_template_string("""
+        <!DOCTYPE html>
+        <html lang="pt-br">
+        <head>
+            <meta charset="UTF-8">
+            <title>Vendas do Mes - SGF</title>
+
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    background: #F1F4F9;
+                    margin: 0;
+                    padding: 30px;
+                    color: #17365D;
+                }
+
+                .container {
+                    max-width: 1100px;
+                    margin: auto;
+                    background: white;
+                    padding: 30px;
+                    border-radius: 12px;
+                    border: 1px solid #DCE3EC;
+                }
+
+                h1 {
+                    margin-top: 0;
+                    color: #17365D;
+                }
+
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 25px;
+                }
+
+                th {
+                    background: #DCE7F3;
+                    padding: 14px;
+                    text-align: left;
+                }
+
+                td {
+                    padding: 14px;
+                    border-bottom: 1px solid #D5DFEA;
+                }
+            </style>
+        </head>
+
+        <body>
+            <div class="container">
+
+                <h1>Vendas do mês</h1>
+                <p>Período: {{ mes }}</p>
+
+
+{% if session.get("perfil") in ("Proprietario", "Financeiro") %}
+
+<div style="background:#F4F7FB; padding:24px; border:1px solid #DCE3EC; border-radius:12px; margin-top:25px;">
+
+    <h2 style="color:#17365D; margin-top:0;">
+        Nova venda
+    </h2>
+
+    <p style="color:#718096;">
+        Selecione o cliente e o produto para registrar uma venda.
+    </p>
+
+
+<form method="POST" action="/vendas">
+    <input
+        type="hidden"
+        name="csrf_token"
+        value="{{ session.get('csrf_vendas', '') }}"
+    >
+
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:18px;">
+
+        <div>
+            <label for="cliente_id"><strong>Cliente</strong></label>
+            <select id="cliente_id" name="cliente_id"
+                style="width:100%; padding:12px; margin-top:8px; border:1px solid #CBD5E1; border-radius:8px; background:white;">
+                <option value="">Selecione o cliente</option>
+                {% for cliente in clientes %}
+                <option value="{{ cliente['id'] }}">
+                    {{ cliente["nome"] }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label for="produto_id"><strong>Produto</strong></label>
+            <select id="produto_id" name="produto_id"
+                style="width:100%; padding:12px; margin-top:8px; border:1px solid #CBD5E1; border-radius:8px; background:white;">
+                <option value="">Selecione o produto</option>
+                {% for produto in produtos %}
+               
+
+<option value="{{ produto['id'] }}"
+        data-preco="{{ produto['preco_venda'] }}"
+        data-estoque="{{ produto['quantidade_estoque'] }}">
+
+    {{ produto["nome"] }} - Estoque: {{ produto["quantidade_estoque"] }}
+</option>
+
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label for="quantidade"><strong>Quantidade</strong></label>
+            <input type="number" id="quantidade" name="quantidade"
+                min="1" value="1"
+                style="width:100%; box-sizing:border-box; padding:12px; margin-top:8px; border:1px solid #CBD5E1; border-radius:8px;">
+        </div>
+
+        <div>
+            <label for="preco_unitario"><strong>Preço unitário</strong></label>
+            <input type="text" id="preco_unitario"
+                placeholder="Preenchimento automático em breve"
+                readonly
+                style="width:100%; box-sizing:border-box; padding:12px; margin-top:8px; border:1px solid #CBD5E1; border-radius:8px; background:#E9EEF5;">
+        </div>
+
+    </div>
+
+
+<div style="margin-top:22px; max-width:300px;">
+
+    <label for="valor_total">
+        <strong>Valor total da venda</strong>
+    </label>
+
+    <input
+        type="text"
+        id="valor_total"
+        placeholder="R$ 0,00"
+        readonly
+        style="
+            width:100%;
+            box-sizing:border-box;
+            padding:14px;
+            margin-top:8px;
+            border:1px solid #CBD5E1;
+            border-radius:8px;
+            background:#E9EEF5;
+            color:#17365D;
+            font-size:18px;
+            font-weight:bold;
+        "
+    >
+
+</div>
+
+
+<button type="submit"
+    style="
+        margin-top:22px;
+        padding:13px 25px;
+        background:#17365D;
+        color:white;
+        border:0;
+        border-radius:8px;
+        font-weight:bold;
+        font-size:14px;
+        cursor:pointer;
+    ">
+    Registrar venda
+</button>
+
+    </form>
+
+</div>
+
+{% endif %}
+
+
+                {% if vendas %}
+                    <table>
+                        <thead>
+                            <tr>
+                               
+<th>Data</th>
+<th>Cliente</th>
+<th>Produtos vendidos</th>
+<th>Valor</th>
+<th>Situação</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for venda in vendas %}
+                            <tr>
+                                
+<td>{{ venda["data_venda"] }}</td>
+<td>{{ venda["cliente"] }}</td>
+<td>{{ venda["itens"] }}</td>
+<td>R$ {{ "%.2f"|format(venda["valor_total"]) }}</td>
+<td>{{ venda["situacao"] }}</td>
+
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>Nenhuma venda registrada neste mês.</p>
+                {% endif %}
+
+            </div>
+         
+
+
+<script>
+    const campoProduto = document.getElementById("produto_id");
+    const campoPreco = document.getElementById("preco_unitario");
+    const campoQuantidade = document.getElementById("quantidade");
+    const campoTotal = document.getElementById("valor_total");
+
+    function formatarMoeda(valor) {
+        return valor.toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL"
+        });
+    }
+
+    if (campoProduto && campoPreco && campoQuantidade && campoTotal) {
+
+        const avisoEstoque = document.createElement("p");
+        avisoEstoque.style.color = "#B42318";
+        avisoEstoque.style.fontSize = "13px";
+        avisoEstoque.style.fontWeight = "bold";
+        avisoEstoque.style.marginTop = "8px";
+        avisoEstoque.setAttribute("role", "alert");
+
+        campoQuantidade.insertAdjacentElement(
+            "afterend", avisoEstoque
+        );
+
+        function atualizarValores() {
+
+            const opcao =
+                campoProduto.options[campoProduto.selectedIndex];
+
+            const precoTexto = opcao.getAttribute("data-preco");
+            const estoqueTexto = opcao.getAttribute("data-estoque");
+
+            const quantidade = Number(campoQuantidade.value);
+
+            avisoEstoque.textContent = "";
+            campoQuantidade.setCustomValidity("");
+            campoPreco.value = "";
+            campoTotal.value = "";
+
+            if (precoTexto === null || precoTexto === "") {
+                return;
+            }
+
+            const preco = Number(precoTexto);
+
+            if (!Number.isFinite(preco) || preco < 0) {
+                return;
+            }
+
+            campoPreco.value = formatarMoeda(preco);
+
+            if (!Number.isInteger(quantidade) || quantidade <= 0) {
+                return;
+            }
+
+            const estoque = Number(estoqueTexto);
+
+            if (estoqueTexto === null ||
+                !Number.isInteger(estoque) || estoque < 0) {
+                avisoEstoque.textContent =
+                    "Não foi possível verificar o estoque.";
+                return;
+            }
+
+            if (quantidade > estoque) {
+
+                const mensagem =
+                    "Estoque insuficiente! Disponível: " +
+                    estoque + " unidade(s).";
+
+                avisoEstoque.textContent = mensagem;
+                campoQuantidade.setCustomValidity(mensagem);
+
+                return;
+            }
+
+            campoTotal.value = formatarMoeda(preco * quantidade);
+        }
+
+        campoProduto.addEventListener("change", atualizarValores);
+        campoQuantidade.addEventListener("input", atualizarValores);
+
+        atualizarValores();
+    }
+</script>
+
+   
+        </body>
+        </html>
+    
+    """,
+        vendas=lista_vendas,
+        mes=date.today().strftime("%m/%Y"),
+        clientes=lista_clientes,
+        produtos=lista_produtos
+    )
+
+
 
 
 if __name__ == "__main__":

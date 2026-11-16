@@ -199,8 +199,27 @@ def criar_tabelas():
     """)
 
 
+    # Tabela de itens das vendas
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS itens_venda (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            empresa_id INTEGER NOT NULL,
+            venda_id INTEGER NOT NULL,
+            produto_id INTEGER NOT NULL,
+            quantidade INTEGER NOT NULL CHECK (quantidade > 0),
+            preco_unitario REAL NOT NULL CHECK (preco_unitario >= 0),
+            valor_total REAL NOT NULL CHECK (valor_total >= 0),
+            FOREIGN KEY (empresa_id) REFERENCES empresas(id),
+            FOREIGN KEY (venda_id) REFERENCES vendas(id),
+            FOREIGN KEY (produto_id) REFERENCES produtos(id)
+        )
+    """)
+
+
+
     conexao.commit()
     conexao.close()
+
 
 
 if __name__ == "__main__":
