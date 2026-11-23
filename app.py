@@ -6142,12 +6142,18 @@ def login():
             session["perfil"] = usuario["perfil"]
             session["nome"] = usuario["nome"]
             
+            
             # Logistica entra diretamente no estoque
             if usuario["perfil"] == "Logistica":
                 return redirect(url_for("produtos"))
 
+            # Comercial entra diretamente em Vendas
+            if usuario["perfil"] == "Comercial":
+                return redirect(url_for("vendas"))
+
             # Proprietario e Financeiro entram no painel principal
             return redirect(url_for("inicio"))
+
 
 
         erro = "Email ou senha incorretos."
@@ -6625,6 +6631,16 @@ def vendas():
         """, (empresa_id, mes_atual)).fetchall()
 
      
+        # Indicadores de vendas do mes
+        total_vendas_mes = len(lista_vendas)
+
+        faturamento_mes = sum(
+            float(venda["valor_total"] or 0)
+            for venda in lista_vendas
+        )
+   
+
+     
         # Clientes disponíveis para venda
         lista_clientes = conexao.execute("""
             SELECT id, nome
@@ -6689,30 +6705,235 @@ def vendas():
                 }
 
                 td {
-                    padding: 14px;
+h1>ve                    padding: 14px;
                     border-bottom: 1px solid #D5DFEA;
                 }
+
+
+/* Aparencia profissional do historico de vendas */
+table {
+    background: #FFFFFF;
+    border: 1px solid #D5DFEA;
+}
+
+th {
+    color: #17365D;
+    font-weight: bold;
+    border-bottom: 2px solid #B8CADD;
+}
+
+tbody tr:nth-child(even) {
+    background: #F4F7FB;
+}
+
+tbody tr:hover {
+    background: #EAF1F9;
+}
+
+td {
+    color: #334155;
+}
+
             </style>
         </head>
 
         <body>
-            <div class="container">
+    <div class="container">    
+            
 
-                <h1>Vendas do mês</h1>
-                <p>Período: {{ mes }}</p>
+<!-- Cabeçalho padrão SGF - Vendas -->
+<div style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:20px;
+    background:#DCE7F3;
+    border-left:5px solid #17365D;
+    border-radius:10px;
+    padding:24px 22px;
+    margin-bottom:26px;
+">
+
+    <div>
+        <h1 style="
+            margin:0 0 6px;
+            color:#17365D;
+            font-size:28px;
+            font-weight:bold;
+        ">
+            🛒 Gestão de Vendas
+        </h1>
+
+        <p style="
+            margin:0;
+            color:#64748B;
+            font-size:13px;
+        ">
+            Cadastro e acompanhamento das vendas da empresa
+        </p>
+
+        <p style="
+            margin:8px 0 0;
+            color:#17365D;
+            font-size:13px;
+        ">
+            Período: <strong>{{ mes }}</strong>
+        </p>
+    </div>
+
+    
+<div style="
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+">
+
+    {% if session.get("perfil") in ("Proprietario", "Financeiro") %}
+
+    <a href="/" style="
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        background:#FFFFFF;
+        color:#17365D;
+        text-decoration:none;
+        padding:12px 18px;
+        border:2px solid #17365D;
+        border-radius:9px;
+        font-size:14px;
+        font-weight:bold;
+        box-shadow:0 3px 8px rgba(23,54,93,0.10);
+    ">
+        ← Painel principal
+    </a>
+
+    {% endif %}
+
+    <form method="POST" action="/logout" style="margin:0;">
+
+        <button type="submit" style="
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            background:#17365D;
+            color:#FFFFFF;
+            border:2px solid #17365D;
+            border-radius:9px;
+            padding:12px 18px;
+            font-size:14px;
+            font-weight:bold;
+            cursor:pointer;
+            box-shadow:0 4px 10px rgba(23,54,93,0.18);
+        ">
+            ↪ Sair do sistema
+        </button>
+
+    </form>
+
+</div>
+
+
+</div>
+
+
+
+         
+<!-- Indicadores de vendas do mês -->
+<div style="
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:20px;
+    margin-top:25px;
+    margin-bottom:30px;
+">
+
+    <!-- Quantidade de vendas -->
+    <div style="
+        background:#F4F7FB;
+        border:1px solid #DCE3EC;
+        border-left:5px solid #2474B8;
+        border-radius:12px;
+        padding:24px;
+    ">
+        <p style="color:#718096; margin:0; font-size:14px;">
+            Vendas realizadas no mês
+        </p>
+
+        <h2 style="
+            color:#17365D;
+            font-size:30px;
+            margin:12px 0 0;
+        ">
+            {{ total_vendas_mes }}
+        </h2>
+    </div>
+
+    <!-- Faturamento do mês -->
+    <div style="
+        background:#F4F7FB;
+        border:1px solid #DCE3EC;
+        border-left:5px solid #237747;
+        border-radius:12px;
+        padding:24px;
+    ">
+        <p style="color:#718096; margin:0; font-size:14px;">
+            Faturamento do mês
+        </p>
+
+        <h2 style="
+            color:#17365D;
+            font-size:30px;
+            margin:12px 0 0;
+        ">
+            R$ {{ "{:,.2f}".format(faturamento_mes).replace(",", "X").replace(".", ",").replace("X", ".") }}
+        </h2>
+    </div>
+
+</div>
+       
 
 
 {% if session.get("perfil") in ("Proprietario", "Financeiro") %}
 
-<div style="background:#F4F7FB; padding:24px; border:1px solid #DCE3EC; border-radius:12px; margin-top:25px;">
 
-    <h2 style="color:#17365D; margin-top:0;">
-        Nova venda
-    </h2>
+<div style="
+    background:#FFFFFF;
+    padding:24px;
+    border:1px solid #DCE3EC;
+    border-radius:12px;
+    margin-top:25px;
+    box-shadow:0 4px 14px rgba(23,54,93,0.05);
+">
 
-    <p style="color:#718096;">
-        Selecione o cliente e o produto para registrar uma venda.
-    </p>
+    <!-- Titulo da secao Nova venda -->
+    <div style="
+        background:#F4F7FB;
+        border-left:4px solid #17365D;
+        border-radius:9px;
+        padding:17px 20px;
+        margin-bottom:24px;
+    ">
+
+        <h2 style="
+            color:#17365D;
+            margin:0 0 6px;
+            font-size:22px;
+        ">
+            Nova venda
+        </h2>
+
+        <p style="
+            color:#718096;
+            margin:0;
+            font-size:13px;
+        ">
+            Selecione o cliente e o produto para registrar uma venda.
+        </p>
+
+    </div>
+
 
 
 <form method="POST" action="/vendas">
@@ -6767,7 +6988,7 @@ def vendas():
         <div>
             <label for="preco_unitario"><strong>Preço unitário</strong></label>
             <input type="text" id="preco_unitario"
-                placeholder="Preenchimento automático em breve"
+                placeholder="Selecione um produto"
                 readonly
                 style="width:100%; box-sizing:border-box; padding:12px; margin-top:8px; border:1px solid #CBD5E1; border-radius:8px; background:#E9EEF5;">
         </div>
@@ -6825,6 +7046,81 @@ def vendas():
 {% endif %}
 
 
+<!-- Card Historico de Vendas -->
+<div style="
+    background:#FFFFFF;
+    border:1px solid #DCE3EC;
+    border-radius:12px;
+    padding:24px;
+    margin-top:26px;
+    box-shadow:0 4px 14px rgba(23,54,93,0.05);
+">
+
+    <div style="
+        background:#F4F7FB;
+        border-left:4px solid #17365D;
+        border-radius:9px;
+        padding:17px 20px;
+        margin-bottom:22px;
+    ">
+
+     
+<div style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    flex-wrap:wrap;
+    margin-bottom:6px;
+">
+
+  
+<div style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    flex-wrap:wrap;
+    margin-bottom:6px;
+">
+
+    <h2 style="
+        color:#17365D;
+        margin:0;
+        font-size:22px;
+    ">
+        Histórico de Vendas
+    </h2>
+
+    
+
+</div>
+ 
+    <span style="
+        background:#E5EDF7;
+        color:#17365D;
+        padding:7px 14px;
+        border-radius:20px;
+        font-size:12px;
+        font-weight:bold;
+    ">
+        {{ total_vendas_mes }} venda(s)
+    </span>
+
+</div>
+  
+        <p style="
+            color:#718096;
+            margin:0;
+            font-size:13px;
+        ">
+            Consulte as vendas realizadas no mês e os produtos vendidos.
+        </p>
+
+    </div>
+
+
+
                 {% if vendas %}
                     <table>
                         <thead>
@@ -6842,11 +7138,44 @@ def vendas():
                             {% for venda in vendas %}
                             <tr>
                                 
-<td>{{ venda["data_venda"] }}</td>
+
+<td>{{ venda["data_venda"][8:10] }}/{{ venda["data_venda"][5:7] }}/{{ venda["data_venda"][0:4] }}</td>
 <td>{{ venda["cliente"] }}</td>
 <td>{{ venda["itens"] }}</td>
-<td>R$ {{ "%.2f"|format(venda["valor_total"]) }}</td>
-<td>{{ venda["situacao"] }}</td>
+<td>R$ {{ "{:,.2f}".format(venda["valor_total"]).replace(",", "X").replace(".", ",").replace("X", ".") }}</td>
+
+<td>
+    {% if venda["situacao"] in ("Concluida", "Concluída") %}
+
+    <span style="
+        display:inline-block;
+        background:#E5F5EC;
+        color:#237747;
+        padding:7px 13px;
+        border-radius:20px;
+        font-size:12px;
+        font-weight:bold;
+    ">
+        ✓ Concluída
+    </span>
+
+    {% else %}
+
+    <span style="
+        display:inline-block;
+        background:#F1F4F9;
+        color:#475569;
+        padding:7px 13px;
+        border-radius:20px;
+        font-size:12px;
+        font-weight:bold;
+    ">
+        {{ venda["situacao"] }}
+    </span>
+
+    {% endif %}
+</td>
+
 
                             </tr>
                             {% endfor %}
@@ -6854,10 +7183,13 @@ def vendas():
                     </table>
                 {% else %}
                     <p>Nenhuma venda registrada neste mês.</p>
-                {% endif %}
+   
+{% endif %}
 
-            </div>
-         
+</div> <!-- Fecha o card Historico de Vendas -->
+
+</div> <!-- Fecha o container principal -->
+            
 
 
 <script>
@@ -6951,13 +7283,16 @@ def vendas():
    
         </body>
         </html>
-    
+  
     """,
         vendas=lista_vendas,
         mes=date.today().strftime("%m/%Y"),
         clientes=lista_clientes,
-        produtos=lista_produtos
+        produtos=lista_produtos,
+        total_vendas_mes=total_vendas_mes,
+        faturamento_mes=faturamento_mes
     )
+
 
 
 
