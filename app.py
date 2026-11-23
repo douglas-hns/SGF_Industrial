@@ -3066,16 +3066,18 @@ def inicio():
                     color: #26364A;
                 }
 
-                .sidebar {
+          
+.sidebar {
     width: 250px;
     height: 100vh;
-    background: linear-gradient(180deg, #142B45 0%, #0D1D30 100%);
+    background: linear-gradient(180deg, #303943 0%, #1D2630 100%);
     color: white;
     position: fixed;
     padding: 25px 18px;
     box-shadow: 3px 0 12px rgba(0, 0, 0, 0.12);
     overflow-y: auto;
 }
+   
 
                .logo {
     font-size: 20px;
@@ -3094,23 +3096,28 @@ def inicio():
                     margin-bottom: 40px;
                 }
 
-                .menu a {
+              
+.menu a {
     display: block;
-    color: #D6E2EF;
+    color: #E2E8F0;
     text-decoration: none;
-    padding: 14px 16px;
+    padding: 13px 14px;
     border-radius: 8px;
-    margin-bottom: 8px;
+    border-left: 3px solid transparent;
+    margin-bottom: 5px;
     font-size: 14px;
     font-weight: 500;
-    transition: all 0.2s ease;
+    line-height: 1.4;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .menu a:hover {
-    background: #2474B8;
+    background: rgba(255, 255, 255, 0.10);
     color: #FFFFFF;
-    padding-left: 20px;
+    border-left-color: #63A9E8;
+    text-decoration: none;
 }
+
                .main {
     margin-left: 250px;
     padding: 35px;
@@ -3258,11 +3265,55 @@ def inicio():
 
             <aside class="sidebar">
 
-                <div class="logo">SGF INDUSTRIAL</div>
+               
+<!-- Logotipo e nome do SGF -->
+<div style="
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding-bottom:18px;
+    margin-bottom:20px;
+    border-bottom:1px solid rgba(255,255,255,0.14);
+">
 
-                <div class="subtitle">
-                    GESTÃO FINANCEIRA EMPRESARIAL
-                </div>
+    <img
+        src="/static/sgf_logo_corporativo_transparente.png"
+        alt="Logotipo SGF"
+        style="
+            width:46px;
+            height:46px;
+            object-fit:contain;
+            flex-shrink:0;
+            background:#FFFFFF;
+padding:4px;
+border-radius:8px;
+        "
+    >
+
+    <div style="min-width:0;">
+
+        <div style="
+            color:#FFFFFF;
+            font-size:17px;
+            font-weight:bold;
+            line-height:1.2;
+        ">
+            SGF INDUSTRIAL
+        </div>
+
+        <div style="
+            color:#B9C7D8;
+            font-size:10px;
+            margin-top:6px;
+            line-height:1.4;
+        ">
+            GESTÃO FINANCEIRA EMPRESARIAL
+        </div>
+
+    </div>
+
+</div>
+
 
                 <nav class="menu">
     <a href="/">▦ Visão geral</a>
