@@ -344,10 +344,42 @@ def clientes():
     <a href="/" class="voltar-clientes">← Voltar ao painel</a>
 </div>
 
-<h2>Adicionar novo cliente</h2>
-<p class="descricao-clientes">
-    Preencha as informações para cadastrar um cliente.
-</p>
+<!-- Card de cadastro de clientes -->
+<div style="
+    background:#FFFFFF;
+    border:1px solid #DCE3EC;
+    border-radius:12px;
+    padding:24px;
+    margin-top:24px;
+    box-shadow:0 4px 14px rgba(23,54,93,0.05);
+">
+
+
+
+<div style="
+    background:#F4F7FB;
+    border-left:4px solid #17365D;
+    border-radius:9px;
+    padding:17px 20px;
+    margin-bottom:22px;
+">
+    <h2 style="
+        color:#17365D;
+        margin:0 0 6px;
+        font-size:22px;
+    ">
+        Adicionar novo cliente
+    </h2>
+
+    <p style="
+        color:#718096;
+        margin:0;
+        font-size:13px;
+    ">
+        Preencha as informações para cadastrar um cliente.
+    </p>
+</div>
+
 
 <form method="POST">
     <div class="form-clientes">
@@ -381,7 +413,8 @@ def clientes():
         <button type="submit">Salvar cliente</button>
     </div>
 </form>
-                <hr>
+</div> <!-- Fecha o card de cadastro de clientes -->
+                
 
               <style>
     .tabela-clientes-container {
@@ -472,7 +505,65 @@ def clientes():
     }
 </style>
 
-<h2>Clientes cadastrados</h2>
+
+<!-- Card de clientes cadastrados -->
+<div style="
+    background:#FFFFFF;
+    border:1px solid #DCE3EC;
+    border-radius:12px;
+    padding:24px;
+    margin-top:26px;
+    box-shadow:0 4px 14px rgba(23,54,93,0.05);
+">
+
+
+
+<div style="
+    background:#F4F7FB;
+    border-left:4px solid #17365D;
+    border-radius:9px;
+    padding:17px 20px;
+    margin-bottom:22px;
+">
+   
+<div style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    flex-wrap:wrap;
+    margin-bottom:6px;
+">
+    <h2 style="
+        color:#17365D;
+        margin:0;
+        font-size:22px;
+    ">
+        Clientes cadastrados
+    </h2>
+
+    <span style="
+        background:#E5EDF7;
+        color:#17365D;
+        padding:7px 14px;
+        border-radius:20px;
+        font-size:12px;
+        font-weight:bold;
+    ">
+        {{ lista_clientes|length }} cliente(s)
+    </span>
+</div>
+
+
+    <p style="
+        color:#718096;
+        margin:0;
+        font-size:13px;
+    ">
+        Consulte, edite e gerencie os clientes cadastrados no sistema.
+    </p>
+</div>
+
 
 <div class="tabela-clientes-container">
     <table class="tabela-clientes">
@@ -522,14 +613,14 @@ def clientes():
                 </tr>
             {% endfor %}
         </tbody>
-    </table>
+      </table>
 </div>
 
-                <p><a href="/">Voltar ao painel</a></p>
-<h2
-            </div>
-        </body>
-        </html>
+</div> <!-- Fecha o card de clientes cadastrados -->
+
+</div>
+</body>
+</html>  
     """, lista_clientes=lista_clientes)
 
 
