@@ -3101,10 +3101,10 @@ def inicio():
     display: block;
     color: #E2E8F0;
     text-decoration: none;
-    padding: 13px 14px;
+    padding: 10px 12px;
     border-radius: 8px;
     border-left: 3px solid transparent;
-    margin-bottom: 5px;
+    margin-bottom: 3px;
     font-size: 14px;
     font-weight: 500;
     line-height: 1.4;
@@ -3316,17 +3316,71 @@ border-radius:8px;
 
 
                 <nav class="menu">
+
+<!-- Categoria Principal -->
+<div style="
+    color:#AFC1D1;
+    font-size:11px;
+    font-weight:bold;
+    letter-spacing:1px;
+    margin:12px 12px 8px;
+">
+    PRINCIPAL
+</div>
+
     <a href="/">▦ Visão geral</a>
+
+<!-- Categoria Operacional -->
+<div style="
+    color:#AFC1D1;
+    font-size:11px;
+    font-weight:bold;
+    letter-spacing:1px;
+    margin:20px 12px 8px;
+    padding-top:14px;
+    border-top:1px solid rgba(255,255,255,0.12);
+">
+    OPERACIONAL
+</div>
+
     <a href="/clientes">👥 Clientes</a>
     <a href="/equipamentos">🔧 Equipamentos</a>
     <a href="/produtos">📦 Produtos</a>
     <a href="/vendas">🛒 Vendas</a>
     <a href="/movimentacoes-estoque">📊 Movimentações de estoque</a>
+
+<!-- Categoria Financeiro -->
+<div style="
+    color:#AFC1D1;
+    font-size:11px;
+    font-weight:bold;
+    letter-spacing:1px;
+    margin:20px 12px 8px;
+    padding-top:14px;
+    border-top:1px solid rgba(255,255,255,0.12);
+">
+    FINANCEIRO
+</div>
+
     <a href="/fluxo-caixa">💰 Fluxo de caixa</a>
     <a href="/contas-pagar">📤 Contas a pagar</a>
 <a href="/contas-receber">📥 Contas a receber</a>
 <a href="/fechamento-mensal">📅 Fechamento mensal</a>
 <a href="/fechamento-anual">📊 Fechamento anual</a>
+
+<!-- Categoria Administração -->
+<div style="
+    color:#AFC1D1;
+    font-size:11px;
+    font-weight:bold;
+    letter-spacing:1px;
+    margin:20px 12px 8px;
+    padding-top:14px;
+    border-top:1px solid rgba(255,255,255,0.12);
+">
+    ADMINISTRAÇÃO
+</div>
+
 
                     <a href="#">📊 Relatórios</a>
                     <a href="#">🏢 Empresas</a>
@@ -3396,6 +3450,14 @@ border-radius:8px;
 
 </section>
 
+<!-- Área dos gráficos financeiros -->
+<div style="
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(min(100%, 440px), 1fr));
+    gap:20px;
+    align-items:start;
+">
+
 <section class="panel">
 
     <h2>Entradas x Saídas — Últimos 6 meses</h2>
@@ -3407,11 +3469,11 @@ border-radius:8px;
 
     {% for item in meses_financeiros %}
 
-    <div style="margin-bottom: 22px;">
+    <div style="margin-bottom: 12px;">
 
         <strong>{{ item.mes }}</strong>
 
-        <p style="margin-top: 10px;">
+        <p style="margin: 4px 0 3px;">
             Entradas: R$ {{ "%.2f"|format(item.entradas) }}
         </p>
 
@@ -3420,7 +3482,7 @@ border-radius:8px;
             </div>
         </div>
 
-        <p style="margin-top: 10px;">
+        <p style="margin: 4px 0 3px;">
             Saídas: R$ {{ "%.2f"|format(item.saidas) }}
         </p>
 
@@ -3446,34 +3508,59 @@ border-radius:8px;
 
     {% else %}
 
-        {% for item in meses_financeiros %}
+     
 
-        <div style="margin-bottom: 20px;">
+{% for item in meses_financeiros %}
 
-            <strong>{{ item.mes }}</strong>
+<div style="
+    display:grid;
+    grid-template-columns:55px minmax(0,1fr);
+    gap:12px;
+    align-items:center;
+    padding:12px 0;
+    border-bottom:1px solid #EDF0F4;
+">
 
-            <p style="margin-top: 8px; font-weight: bold; color: {% if item.resultado >= 0 %}#16A36A{% else %}#D9534F{% endif %};">
-                R$ {{ "%.2f"|format(item.resultado) }}
-            </p>
+    <strong style="color:#17365D; font-size:13px;">
+        {{ item.mes }}
+    </strong>
 
-            <div style="background: #E5EAF0; height: 16px; border-radius: 10px; overflow: hidden;">
+    <div style="min-width:0;">
 
-                <div style="
-                    background: {% if item.resultado >= 0 %}#16A36A{% else %}#D9534F{% endif %};
-                    height: 16px;
-                    width: {{ (item.resultado|abs / maior_resultado * 100) if maior_resultado > 0 else 0 }}%;
-                    border-radius: 10px;">
-                </div>
-
-            </div>
-
+        <div style="
+            font-size:12px;
+            font-weight:bold;
+            margin-bottom:7px;
+            color:{% if item.resultado >= 0 %}#16A36A{% else %}#D9534F{% endif %};
+        ">
+            Resultado: R$ {{ "%.2f"|format(item.resultado) }}
         </div>
 
-        {% endfor %}
+        <div style="
+            background:#E5EAF0;
+            height:9px;
+            border-radius:10px;
+            overflow:hidden;
+        ">
+            <div style="
+                background:{% if item.resultado >= 0 %}#16A36A{% else %}#D9534F{% endif %};
+                height:100%;
+                width:{{ (item.resultado|abs / maior_resultado * 100) if maior_resultado > 0 else 0 }}%;
+                border-radius:10px;
+            "></div>
+        </div>
 
+    </div>
+
+</div>
+
+{% endfor %}
+
+  
     {% endif %}
 
 </section>
+</div> <!-- Fecha a área dos gráficos financeiros -->
 <section class="panel">
 
     <h2>Resumo financeiro do mês</h2>
