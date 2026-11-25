@@ -3467,33 +3467,80 @@ border-radius:8px;
     </p>
 {% endif %}
 
-    {% for item in meses_financeiros %}
+   
+{% for item in meses_financeiros %}
 
-    <div style="margin-bottom: 12px;">
+<div style="
+    display:grid;
+    grid-template-columns:55px minmax(0,1fr) minmax(0,1fr);
+    gap:12px;
+    align-items:center;
+    padding:12px 0;
+    border-bottom:1px solid #EDF0F4;
+">
 
-        <strong>{{ item.mes }}</strong>
+    <strong style="color:#17365D; font-size:13px;">
+        {{ item.mes }}
+    </strong>
 
-        <p style="margin: 4px 0 3px;">
+    <!-- Entradas -->
+    <div style="min-width:0;">
+
+        <div style="
+            color:#64748B;
+            font-size:12px;
+            margin-bottom:7px;
+        ">
             Entradas: R$ {{ "%.2f"|format(item.entradas) }}
-        </p>
-
-        <div style="background: #E5EAF0; height: 14px; border-radius: 10px; overflow: hidden;">
-            <div style="background: #16A36A; height: 14px; width: {{ (item.entradas / maior_movimento * 100) if maior_movimento > 0 else 0 }}%; border-radius: 10px;">
-            </div>
         </div>
 
-        <p style="margin: 4px 0 3px;">
-            Saídas: R$ {{ "%.2f"|format(item.saidas) }}
-        </p>
-
-        <div style="background: #E5EAF0; height: 14px; border-radius: 10px; overflow: hidden;">
-            <div style="background: #D9534F; height: 14px; width: {{ (item.saidas / maior_movimento * 100) if maior_movimento > 0 else 0 }}%; border-radius: 10px;">
-            </div>
+        <div style="
+            background:#E5EAF0;
+            height:9px;
+            border-radius:10px;
+            overflow:hidden;
+        ">
+            <div style="
+                background:#16A36A;
+                height:100%;
+                width:{{ (item.entradas / maior_movimento * 100) if maior_movimento > 0 else 0 }}%;
+                border-radius:10px;
+            "></div>
         </div>
 
     </div>
 
-    {% endfor %}
+    <!-- Saídas -->
+    <div style="min-width:0;">
+
+        <div style="
+            color:#64748B;
+            font-size:12px;
+            margin-bottom:7px;
+        ">
+            Saídas: R$ {{ "%.2f"|format(item.saidas) }}
+        </div>
+
+        <div style="
+            background:#E5EAF0;
+            height:9px;
+            border-radius:10px;
+            overflow:hidden;
+        ">
+            <div style="
+                background:#D9534F;
+                height:100%;
+                width:{{ (item.saidas / maior_movimento * 100) if maior_movimento > 0 else 0 }}%;
+                border-radius:10px;
+            "></div>
+        </div>
+
+    </div>
+
+</div>
+
+{% endfor %}
+
 
 </section>
 <section class="panel">
