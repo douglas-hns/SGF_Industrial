@@ -1,0 +1,483 @@
+{% extends "base.html" %}
+{% block titulo %}Movimenta??es de Estoque - SGF{% endblock %}
+{% block estilos %}
+<style>
+                * {
+                    box-sizing: border-box;
+                }
+
+                body {
+                    font-family: Arial, sans-serif;
+                    background: #F1F4F9;
+                    margin: 0;
+                    padding: 30px;
+                    color: #263445;
+                }
+
+                .container {
+                    max-width: 1200px;
+                    margin: auto;
+                }
+
+                .topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 25px;
+    background: #DCE7F3;
+    padding: 22px;
+    border-left: 5px solid #17365D;
+    border-radius: 9px;
+}
+                .topo h1 {
+                    color: #17365D;
+                    margin: 0 0 6px;
+                    font-size: 28px;
+                }
+
+                .subtitulo {
+                    color: #718096;
+                    margin: 0;
+                    font-size: 14px;
+                }
+
+                .voltar {
+                    background: white;
+                    color: #17365D;
+                    text-decoration: none;
+                    padding: 11px 17px;
+                    border-radius: 7px;
+                    border: 1px solid #DCE3EC;
+                    font-weight: bold;
+                }
+
+                .voltar:hover {
+                    background: #EAF0F7;
+                }
+
+                .card {
+                    background: white;
+                    padding: 25px;
+                    border-radius: 12px;
+                    box-shadow: 0 3px 12px rgba(20, 45, 75, 0.06);
+                    margin-bottom: 25px;
+                }
+
+                .card h2 {
+                    color: #17365D;
+                    margin: 0 0 8px;
+                    font-size: 20px;
+                }
+
+                .descricao-card {
+                    color: #718096;
+                    font-size: 13px;
+                    margin: 0 0 22px;
+                }
+                .titulo-secao {
+    background: #F4F7FB;
+    border-left: 4px solid #17365D;
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin-bottom: 22px;
+}
+
+.titulo-secao h2 {
+    color: #17365D;
+    margin: 0 0 6px;
+    font-size: 22px;
+}
+
+.titulo-secao p {
+    color: #718096;
+    margin: 0;
+    font-size: 13px;
+}
+
+.titulo-lista {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
+
+.titulo-lista .titulo-secao {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.titulo-lista .badge {
+    background: #EAF0F7;
+    color: #17365D;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+                .form-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 18px;
+                }
+
+                .campo {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 7px;
+                }
+
+                .campo label {
+                    font-size: 13px;
+                    font-weight: bold;
+                    color: #46566A;
+                }
+
+                .campo input,
+                .campo select {
+                    width: 100%;
+                    padding: 12px;
+                    border: 1px solid #DCE3EC;
+                    border-radius: 7px;
+                    font-size: 14px;
+                    background: white;
+                    outline: none;
+                }
+
+                .campo input:focus,
+                .campo select:focus {
+                    border-color: #2864A5;
+                    box-shadow: 0 0 0 3px rgba(40, 100, 165, 0.10);
+                }
+
+                .campo-completo {
+                    grid-column: 1 / -1;
+                }
+
+                .botao {
+                    margin-top: 22px;
+                    background: #17365D;
+                    color: white;
+                    padding: 13px 22px;
+                    border: none;
+                    border-radius: 7px;
+                    font-weight: bold;
+                    cursor: pointer;
+                    font-size: 14px;
+                }
+
+                .botao:hover {
+                    background: #245184;
+                }
+
+                .titulo-lista {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    gap: 10px;
+                    margin-bottom: 20px;
+                }
+
+                .contador {
+                    background: #EAF0F7;
+                    color: #17365D;
+                    padding: 7px 12px;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    font-weight: bold;
+                }
+
+                .tabela-container {
+                    overflow-x: auto;
+                }
+
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    min-width: 700px;
+                }
+
+               th {
+    background: #EAF0F7 !important;
+    color: #17365D;
+    text-align: left;
+    padding: 14px 12px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+               td {
+    padding: 16px 12px;
+    border-bottom: 1px solid #D5DFEA;
+    border-right: 1px solid #E1E8F0;
+    font-size: 13px;
+    vertical-align: middle;
+}
+
+tbody tr:hover {
+    background-color: #DCE8F5 !important;
+}
+                tbody tr:hover {
+                    background: #F8FAFD;
+                }
+
+                .nome-produto {
+                    color: #17365D;
+                    font-weight: bold;
+                    font-size: 14px;
+                }
+
+                .codigo {
+                    display: inline-block;
+                    background: #EEF3F9;
+                    color: #31577F;
+                    padding: 5px 9px;
+                    border-radius: 5px;
+                    font-size: 12px;
+                    font-weight: bold;
+                }
+
+                .tipo {
+                    display: inline-block;
+                    padding: 7px 11px;
+                    border-radius: 20px;
+                    font-size: 11px;
+                    font-weight: bold;
+                }
+
+                .entrada {
+                    background: #E5F5EC;
+                    color: #237747;
+                }
+
+                .saida {
+                    background: #FCE8E8;
+                    color: #B42318;
+                }
+
+                .quantidade {
+                    font-weight: bold;
+                    font-size: 14px;
+                }
+
+                .data {
+                    color: #536477;
+                    white-space: nowrap;
+                }
+
+                .vazio {
+                    text-align: center;
+                    padding: 35px;
+                    color: #718096;
+                }
+
+                @media (max-width: 650px) {
+                    body {
+                        padding: 15px;
+                    }
+
+                    .form-grid {
+                        grid-template-columns: 1fr;
+                    }
+
+                    .campo-completo {
+                        grid-column: auto;
+                    }
+
+                    .card {
+                        padding: 18px;
+                    }
+
+                    .topo h1 {
+                        font-size: 23px;
+                    }
+                }
+            </style>
+<style>body { padding: 0; }</style>
+{% endblock %}
+{% block conteudo %}
+<div class="container">
+
+                <div class="topo">
+                    <div>
+                        <h1>📊 Movimentações de Estoque</h1>
+                        <p class="subtitulo">
+                            Controle de entradas, saídas e histórico de produtos
+                        </p>
+                    </div>
+
+                    
+                </div>
+
+                <div class="card">
+
+                 <div class="titulo-secao">
+    <h2>Registrar movimentação</h2>
+    <p>
+        Informe o produto, o tipo e a quantidade movimentada.
+    </p>
+</div>
+
+
+                    <form method="POST">
+
+                        <div class="form-grid">
+
+                            <div class="campo campo-completo">
+                                <label>Produto</label>
+
+                                <select name="produto_id" required>
+                                    <option value="">Selecione um produto</option>
+
+                                    {% for produto in lista_produtos %}
+                                        <option value="{{ produto['id'] }}">
+                                            {{ produto['codigo'] }} - {{ produto['nome'] }}
+                                            (Estoque: {{ produto['quantidade_estoque'] }})
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="campo">
+                                <label>Tipo de movimentação</label>
+
+                                <select name="tipo" required>
+                                    <option value="Entrada">Entrada</option>
+                                    <option value="Saída">Saída</option>
+                                </select>
+                            </div>
+
+                            <div class="campo">
+                                <label>Quantidade</label>
+
+                                <input type="number" name="quantidade"
+                                       min="1" step="1" required
+                                       placeholder="Informe a quantidade">
+                            </div>
+
+                            <div class="campo campo-completo">
+                                <label>Motivo da movimentação</label>
+
+                                <input name="motivo"
+                                       placeholder="Ex.: Compra, venda ou consumo interno">
+                            </div>
+
+                        </div>
+
+                        <button class="botao" type="submit">
+                            Registrar movimentação
+                        </button>
+
+                    </form>
+
+                </div>
+
+                <div class="card">
+
+                   <div class="titulo-lista">
+    <div class="titulo-secao">
+        <h2>Histórico de movimentações</h2>
+        <p>
+            Acompanhe todas as entradas e saídas registradas.
+        </p>
+    </div>
+
+                        <span class="contador">
+                            {{ historico|length }} movimentação(ões)
+                        </span>
+                    </div>
+
+                    <div class="tabela-container">
+
+             <style>
+    .tabela-movimentacoes thead th {
+        background-color: #C5D5E8;
+        color: #17365D;
+    }
+
+    .tabela-movimentacoes tbody td {
+        background-color: #F4F7FB;
+    }
+</style>
+
+<table class="tabela-produtos tabela-movimentacoes">
+    <thead>
+        <tr>
+    <th>Produto</th>
+                                    <th>Código SKU</th>
+                                    <th>Tipo</th>
+                                    <th>Quantidade</th>
+                                    <th>Motivo</th>
+                                    <th>Data</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                {% for movimento in historico %}
+                                <tr>
+                                    <td>
+                                        <span class="nome-produto">
+                                            {{ movimento['produto_nome'] }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="codigo">
+                                            {{ movimento['produto_codigo'] }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        {% if movimento['tipo'] == 'Entrada' %}
+                                            <span class="tipo entrada">
+                                                ↑ Entrada
+                                            </span>
+                                        {% else %}
+                                            <span class="tipo saida">
+                                                ↓ Saída
+                                            </span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td class="quantidade">
+                                        {{ movimento['quantidade'] }} un.
+                                    </td>
+
+                                    <td>
+                                        {{ movimento['motivo'] or 'Não informado' }}
+                                    </td>
+
+                                    <td class="data">
+                                        {{ movimento['data_movimentacao'][8:10] }}/{{ movimento['data_movimentacao'][5:7] }}/{{ movimento['data_movimentacao'][0:4] }}
+                                    </td>
+                                </tr>
+
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="vazio">
+                                        Nenhuma movimentação registrada ainda.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+
+                            </tbody>
+                        </table>
+
+                    </div>
+
+                </div>
+
+                <p>
+                    <a class="voltar" href="/produtos">
+                        📦 Consultar produtos
+                    </a>
+                </p>
+
+            </div>
+{% endblock %}

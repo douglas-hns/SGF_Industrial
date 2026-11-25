@@ -1,0 +1,216 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block titulo %}SGF Industrial{% endblock %}</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #F2F5F9;
+            color: #26364A;
+        }
+
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background: linear-gradient(180deg, #303943 0%, #1D2630 100%);
+            color: white;
+            position: fixed;
+            padding: 25px 18px;
+            box-shadow: 3px 0 12px rgba(0,0,0,0.12);
+            overflow-y: auto;
+        }
+
+        .main {
+            margin-left: 250px;
+            padding: 30px;
+            min-height: 100vh;
+            background: #CDD9E7;
+        }
+
+        @media (max-width: 850px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .main {
+                margin-left: 0;
+                padding: 18px;
+            }
+        }
+    
+/* Títulos das categorias */
+.menu-titulo {
+    color: #AFC1D1;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    margin: 20px 12px 8px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255,255,255,0.12);
+}
+
+/* Links do menu */
+.menu a {
+    display: block;
+    color: #E2E8F0;
+    text-decoration: none;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border-left: 3px solid transparent;
+    margin-bottom: 3px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+/* Efeito ao passar o mouse */
+.menu a:hover {
+    background: rgba(255,255,255,0.10);
+    color: #FFFFFF;
+    border-left-color: #63A9E8;
+}
+
+/* Botão de saída */
+.menu-sair {
+    display: block;
+    width: 100%;
+    margin-top: 12px;
+    padding: 12px;
+    background: #17365D;
+    color: #FFFFFF;
+    border: 1px solid #2474B8;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: bold;
+    font-family: inherit;
+    cursor: pointer;
+    text-align: left;
+}
+
+.menu-sair:hover {
+    background: #2474B8;
+}
+    
+    </style>
+
+    {% block estilos %}{% endblock %}
+</head>
+
+<body>
+   
+<aside class="sidebar">
+
+    <!-- Logotipo e identificação do SGF -->
+    <div style="
+        display:flex;
+        align-items:center;
+        gap:10px;
+        padding-bottom:18px;
+        margin-bottom:20px;
+        border-bottom:1px solid rgba(255,255,255,0.14);
+    ">
+
+        <img
+            src="{{ url_for('static', filename='sgf_logo_corporativo_transparente.png') }}"
+            alt="Logotipo SGF"
+            style="
+                width:46px;
+                height:46px;
+                object-fit:contain;
+                background:#FFFFFF;
+                padding:4px;
+                border-radius:8px;
+                flex-shrink:0;
+            "
+        >
+
+        <div style="min-width:0;">
+            <div style="
+                color:#FFFFFF;
+                font-size:17px;
+                font-weight:bold;
+                line-height:1.2;
+            ">
+                SGF INDUSTRIAL
+            </div>
+
+            <div style="
+                color:#B9C7D8;
+                font-size:10px;
+                margin-top:6px;
+                line-height:1.4;
+            ">
+                GESTÃO FINANCEIRA EMPRESARIAL
+            </div>
+        </div>
+
+    </div>
+
+    
+<!-- Menu lateral compartilhado -->
+<nav class="menu">
+
+    {% if session.get("perfil") in ("Proprietario", "Financeiro") %}
+
+        <div class="menu-titulo">PRINCIPAL</div>
+        <a href="/">▦ Visão geral</a>
+
+        <div class="menu-titulo">OPERACIONAL</div>
+        <a href="/clientes">👥 Clientes</a>
+        <a href="/equipamentos">🔧 Equipamentos</a>
+        <a href="/produtos">📦 Produtos</a>
+        <a href="/vendas">🛒 Vendas</a>
+        <a href="/movimentacoes-estoque">📊 Movimentações de estoque</a>
+
+        <div class="menu-titulo">FINANCEIRO</div>
+        <a href="/fluxo-caixa">💰 Fluxo de caixa</a>
+        <a href="/contas-pagar">📤 Contas a pagar</a>
+        <a href="/contas-receber">📥 Contas a receber</a>
+        <a href="/fechamento-mensal">📅 Fechamento mensal</a>
+        <a href="/fechamento-anual">📊 Fechamento anual</a>
+
+    {% elif session.get("perfil") == "Logistica" %}
+
+        <div class="menu-titulo">OPERACIONAL</div>
+        <a href="/produtos">📦 Produtos</a>
+        <a href="/movimentacoes-estoque">📊 Movimentações de estoque</a>
+
+    {% elif session.get("perfil") == "Comercial" %}
+
+        <div class="menu-titulo">COMERCIAL</div>
+        <a href="/vendas">🛒 Vendas</a>
+
+    {% endif %}
+
+    <div class="menu-titulo">SESSÃO</div>
+
+    <form method="POST" action="{{ url_for('logout') }}">
+        <button type="submit" class="menu-sair">
+            🚪 Sair do sistema
+        </button>
+    </form>
+
+</nav>
+
+
+</aside>
+
+
+    <main class="main">
+        {% block conteudo %}{% endblock %}
+    </main>
+</body>
+</html>

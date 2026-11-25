@@ -1,0 +1,513 @@
+{% extends "base.html" %}
+{% block titulo %}Produtos - SGF Industrial{% endblock %}
+{% block estilos %}
+<style>
+                * {
+                    box-sizing: border-box;
+                }
+
+                body {
+                    font-family: Arial, sans-serif;
+                    background: #F1F4F9;
+                    margin: 0;
+                    padding: 30px;
+                    color: #263445;
+                }
+
+                .container {
+                    max-width: 1200px;
+                    margin: auto;
+                }
+
+                .topo {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 25px;
+                    flex-wrap: wrap;
+                    gap: 15px;
+                    background: #DCE7F3;
+                    padding: 22px;
+                    border-left: 5px solid #17365D;
+                    border-radius: 9px;
+                }
+
+                .topo h1 {
+                    color: #17365D;
+                    margin: 0 0 6px;
+                    font-size: 28px;
+                }
+
+                .subtitulo {
+                    color: #718096;
+                    margin: 0;
+                    font-size: 14px;
+                }
+
+                .voltar {
+                    background: white;
+                    color: #17365D;
+                    text-decoration: none;
+                    padding: 11px 17px;
+                    border-radius: 7px;
+                    border: 1px solid #DCE3EC;
+                    font-weight: bold;
+                }
+
+                .voltar:hover {
+                    background: #EAF0F7;
+                }
+
+                .card {
+                    background: white;
+                    padding: 25px;
+                    border-radius: 12px;
+                    box-shadow: 0 3px 12px rgba(20, 45, 75, 0.06);
+                    margin-bottom: 25px;
+                }
+
+                .card h2 {
+                    color: #17365D;
+                    margin: 0 0 8px;
+                    font-size: 20px;
+                }
+
+                .descricao-card {
+                    color: #718096;
+                    font-size: 13px;
+                    margin: 0 0 22px;
+                }
+                .titulo-secao {
+    background: #F4F7FB;
+    border-left: 4px solid #17365D;
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin-bottom: 22px;
+}
+
+.titulo-secao h2 {
+    color: #17365D;
+    margin: 0 0 6px;
+    font-size: 22px;
+}
+
+.titulo-secao p {
+    color: #718096;
+    margin: 0;
+    font-size: 13px;
+}
+
+.titulo-lista {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
+
+.titulo-lista .titulo-secao {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.titulo-lista .badge {
+    background: #EAF0F7;
+    color: #17365D;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+                .form-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 18px;
+                }
+
+                .campo {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 7px;
+                }
+
+                .campo label {
+                    font-size: 13px;
+                    font-weight: bold;
+                    color: #46566A;
+                }
+
+                .campo input {
+                    width: 100%;
+                    padding: 12px;
+                    border: 1px solid #DCE3EC;
+                    border-radius: 7px;
+                    font-size: 14px;
+                    outline: none;
+                }
+
+                .campo input:focus {
+                    border-color: #2864A5;
+                    box-shadow: 0 0 0 3px rgba(40, 100, 165, 0.10);
+                }
+
+                .campo-completo {
+                    grid-column: 1 / -1;
+                }
+
+                .botao {
+                    margin-top: 22px;
+                    background: #17365D;
+                    color: white;
+                    padding: 13px 22px;
+                    border: none;
+                    border-radius: 7px;
+                    font-weight: bold;
+                    cursor: pointer;
+                    font-size: 14px;
+                }
+
+                .botao:hover {
+                    background: #245184;
+                }
+
+                .titulo-lista {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 20px;
+                    gap: 10px;
+                    flex-wrap: wrap;
+                }
+
+                .contador {
+                    background: #EAF0F7;
+                    color: #17365D;
+                    padding: 7px 12px;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    font-weight: bold;
+                }
+
+                .tabela-container {
+                    overflow-x: auto;
+                }
+
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    min-width: 700px;
+                }
+
+                th {
+    background: #EAF0F7;
+    color: #17365D;
+    text-align: left;
+    padding: 14px 12px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+                td {
+    padding: 16px 12px;
+    border-bottom: 1px solid #C5D2E0;
+    border-right: 1px solid #DCE4ED;
+    font-size: 13px;
+    vertical-align: middle;
+}
+
+                tbody tr:hover {
+                    background: #F8FAFD;
+                }
+
+                .nome-produto {
+                    color: #17365D;
+                    font-weight: bold;
+                    font-size: 14px;
+                }
+
+                .codigo {
+                    display: inline-block;
+                    background: #EEF3F9;
+                    color: #31577F;
+                    padding: 5px 9px;
+                    border-radius: 5px;
+                    font-size: 12px;
+                    font-weight: bold;
+                }
+
+                .preco {
+                    font-weight: bold;
+                    color: #263445;
+                }
+
+                .saldo {
+                    font-size: 15px;
+                    font-weight: bold;
+                    color: #263445;
+                }
+
+                .status {
+                    display: inline-block;
+                    padding: 7px 10px;
+                    border-radius: 20px;
+                    font-size: 11px;
+                    font-weight: bold;
+                    white-space: nowrap;
+                }
+
+                .status-normal {
+                    background: #E5F5EC;
+                    color: #237747;
+                }
+
+                .status-baixo {
+                    background: #FFF0E0;
+                    color: #B65B12;
+                }
+
+                .vazio {
+                    text-align: center;
+                    padding: 35px;
+                    color: #718096;
+                }
+
+                @media (max-width: 650px) {
+                    body {
+                        padding: 15px;
+                    }
+
+                    .form-grid {
+                        grid-template-columns: 1fr;
+                    }
+
+                    .campo-completo {
+                        grid-column: auto;
+                    }
+
+                    .card {
+                        padding: 18px;
+                    }
+
+                    .topo h1 {
+                        font-size: 23px;
+                    }
+                }
+            </style>
+<style>body { padding: 0; }</style>
+{% endblock %}
+{% block conteudo %}
+<div class="container">
+
+                <div class="topo">
+                    <div>
+                        <h1>📦 Gestão de Produtos</h1>
+                        <p class="subtitulo">
+                            Cadastro e controle de produtos do estoque
+                        </p>
+                    </div>
+
+        
+                </div>
+
+                <div class="card">
+
+                  <div class="titulo-secao">
+    <h2>Adicionar novo produto</h2>
+    <p>
+        Preencha as informações para cadastrar um produto.
+    </p>
+</div>
+
+                    <form method="POST">
+
+                        <div class="form-grid">
+
+                            <div class="campo">
+                                <label>Código do produto (SKU)</label>
+                                <input name="codigo" required
+                                       placeholder="Ex.: PROD002">
+                            </div>
+
+                            <div class="campo">
+                                <label>Nome do produto</label>
+                                <input name="nome" required
+                                       placeholder="Nome do produto">
+                            </div>
+
+                            <div class="campo">
+                                <label>Descrição</label>
+                                <input name="descricao"
+                                       placeholder="Descrição do produto">
+                            </div>
+
+                            <div class="campo">
+                                <label>Categoria</label>
+                                <input name="categoria"
+                                       placeholder="Ex.: Equipamentos">
+                            </div>
+
+                            <div class="campo">
+                                <label>Preço de venda (R$)</label>
+                                <input type="number" step="0.01" min="0"
+                                       name="preco_venda" value="0">
+                            </div>
+
+                            <div class="campo">
+                                <label>Quantidade inicial em estoque</label>
+                                <input type="number" min="0"
+                                       name="quantidade_estoque" value="0">
+                            </div>
+
+                            <div class="campo">
+                                <label>Estoque mínimo</label>
+                                <input type="number" min="0"
+                                       name="estoque_minimo" value="0">
+                            </div>
+
+                        </div>
+
+                        <button class="botao" type="submit">
+                            + Cadastrar produto
+                        </button>
+
+                    </form>
+
+                </div>
+
+                <div class="card">
+
+               <div class="titulo-lista">
+    <div class="titulo-secao">
+        <h2>Produtos cadastrados</h2>
+        <p>
+            Consulte os produtos e a situação atual do estoque.
+        </p>
+</div>
+
+
+<form method="GET" action="/produtos" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:20px 0;">
+
+    <input
+        type="text"
+        name="busca"
+        placeholder="Buscar por nome ou código SKU"
+        value="{{ busca }}"
+        style="flex:2; min-width:220px; height:44px; padding:0 12px; border:1px solid #DCE3EC; border-radius:7px; font-size:14px;"
+    >
+
+    <select
+        name="categoria"
+        style="flex:1; min-width:180px; height:44px; padding:0 12px; border:1px solid #DCE3EC; border-radius:7px; font-size:14px;"
+    >
+        <option value="">Todas as categorias</option>
+
+        {% for item in categorias %}
+            <option value="{{ item['categoria'] }}"
+                {% if categoria_filtro == item['categoria'] %}selected{% endif %}>
+                {{ item['categoria'] }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <button type="submit" class="botao"
+        style="margin:0; height:44px; padding:0 22px; white-space:nowrap;">
+        Buscar
+    </button>
+
+    <a href="/produtos" class="voltar"
+        style="height:44px; padding:0 22px; display:flex; align-items:center; justify-content:center; white-space:nowrap;">
+        Limpar
+    </a>
+
+</form>
+
+</div>
+
+<span class="contador">
+    {{ lista_produtos|length }} produto(s)
+</span>
+</div>
+
+                    </div>
+
+                    <div class="tabela-container">
+
+                      <table>
+      <thead>
+    <tr>
+        <th style="background-color: #C5D5E8; color: #17365D;">Produto</th>
+        <th style="background-color: #C5D5E8; color: #17365D;">Código SKU</th>
+        <th style="background-color: #C5D5E8; color: #17365D;">Categoria</th>
+        <th style="background-color: #C5D5E8; color: #17365D;">Preço</th>
+        <th style="background-color: #C5D5E8; color: #17365D;">Estoque</th>
+        <th style="background-color: #C5D5E8; color: #17365D;">Situação</th>
+    </tr>
+</thead>
+
+                            <tbody>
+
+                               {% for produto in lista_produtos %}
+<tr style="background-color: #F4F7FB;">
+                                    <td>
+                                        <span class="nome-produto">
+                                            {{ produto["nome"] }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="codigo">
+                                            {{ produto["codigo"] or "Sem código" }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        {{ produto["categoria"] or "Não informada" }}
+                                    </td>
+
+                                    <td class="preco">
+                                        R$ {{ "%.2f"|format(produto["preco_venda"] or 0) }}
+                                    </td>
+
+                                    <td>
+                                        <span class="saldo">
+                                            {{ produto["quantidade_estoque"] }}
+                                        </span>
+                                        <br>
+                                        <small>
+                                            Mínimo: {{ produto["estoque_minimo"] }}
+                                        </small>
+                                    </td>
+
+                                    <td>
+                                        {% if produto["quantidade_estoque"] <= produto["estoque_minimo"] %}
+                                            <span class="status status-baixo">
+                                                ⚠ Estoque baixo
+                                            </span>
+                                        {% else %}
+                                            <span class="status status-normal">
+                                                ✓ Estoque normal
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="vazio">
+                                        Nenhum produto cadastrado ainda.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+
+                            </tbody>
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+{% endblock %}
