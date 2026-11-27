@@ -20,7 +20,7 @@
         }
 
         .sidebar {
-            width: 250px;
+            width: 220px;
             height: 100vh;
             background: linear-gradient(180deg, #303943 0%, #1D2630 100%);
             color: white;
@@ -31,10 +31,10 @@
         }
 
         .main {
-            margin-left: 250px;
-            padding: 30px;
+            margin-left: 220px;
+            padding: 18px;
             min-height: 100vh;
-            background: #CDD9E7;
+            background: #F1F4F8;
         }
 
         @media (max-width: 850px) {
@@ -74,6 +74,23 @@
     font-weight: 500;
     line-height: 1.4;
     transition: background 0.2s ease, color 0.2s ease;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Seta discreta dos itens do menu */
+.menu a::after {
+    content: "›";
+    font-size: 19px;
+    font-weight: 400;
+    color: #9CAEC0;
+    line-height: 1;
+}
+
+.menu a:hover::after,
+.menu a.ativo::after {
+    color: #FFFFFF;
 }
 
 /* Efeito ao passar o mouse */
@@ -81,6 +98,14 @@
     background: rgba(255,255,255,0.10);
     color: #FFFFFF;
     border-left-color: #63A9E8;
+}
+
+/* Página selecionada no menu lateral */
+.menu a.ativo {
+    background: rgba(255,255,255,0.12);
+    color: #FFFFFF;
+    border-left-color: #63A9E8;
+    font-weight: 600;
 }
 
 /* Botão de saída */
@@ -161,37 +186,38 @@
 
     
 <!-- Menu lateral compartilhado -->
+<!-- Menu lateral compartilhado -->
 <nav class="menu">
 
     {% if session.get("perfil") in ("Proprietario", "Financeiro") %}
 
         <div class="menu-titulo">PRINCIPAL</div>
-        <a href="/">▦ Visão geral</a>
+        <a href="/">Visão geral</a>
 
         <div class="menu-titulo">OPERACIONAL</div>
-        <a href="/clientes">👥 Clientes</a>
-        <a href="/equipamentos">🔧 Equipamentos</a>
-        <a href="/produtos">📦 Produtos</a>
-        <a href="/vendas">🛒 Vendas</a>
-        <a href="/movimentacoes-estoque">📊 Movimentações de estoque</a>
+        <a href="/clientes">Clientes</a>
+        <a href="/equipamentos">Equipamentos</a>
+        <a href="/produtos">Produtos</a>
+        <a href="/vendas">Vendas</a>
+        <a href="/movimentacoes-estoque">Movimentações de estoque</a>
 
         <div class="menu-titulo">FINANCEIRO</div>
-        <a href="/fluxo-caixa">💰 Fluxo de caixa</a>
-        <a href="/contas-pagar">📤 Contas a pagar</a>
-        <a href="/contas-receber">📥 Contas a receber</a>
-        <a href="/fechamento-mensal">📅 Fechamento mensal</a>
-        <a href="/fechamento-anual">📊 Fechamento anual</a>
+        <a href="/fluxo-caixa">Fluxo de caixa</a>
+        <a href="/contas-pagar">Contas a pagar</a>
+        <a href="/contas-receber">Contas a receber</a>
+        <a href="/fechamento-mensal">Fechamento mensal</a>
+        <a href="/fechamento-anual">Fechamento anual</a>
 
     {% elif session.get("perfil") == "Logistica" %}
 
         <div class="menu-titulo">OPERACIONAL</div>
-        <a href="/produtos">📦 Produtos</a>
-        <a href="/movimentacoes-estoque">📊 Movimentações de estoque</a>
+        <a href="/produtos">Produtos</a>
+        <a href="/movimentacoes-estoque">Movimentações de estoque</a>
 
     {% elif session.get("perfil") == "Comercial" %}
 
         <div class="menu-titulo">COMERCIAL</div>
-        <a href="/vendas">🛒 Vendas</a>
+        <a href="/vendas">Vendas</a>
 
     {% endif %}
 
@@ -199,11 +225,24 @@
 
     <form method="POST" action="{{ url_for('logout') }}">
         <button type="submit" class="menu-sair">
-            🚪 Sair do sistema
+            Sair do sistema
         </button>
     </form>
 
 </nav>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const paginaAtual = window.location.pathname;
+    const links = document.querySelectorAll(".menu a");
+
+    links.forEach(function (link) {
+        if (link.getAttribute("href") === paginaAtual) {
+            link.classList.add("ativo");
+            link.setAttribute("aria-current", "page");
+        }
+    });
+});
+</script>
 
 
 </aside>

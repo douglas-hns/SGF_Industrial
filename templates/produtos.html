@@ -15,28 +15,28 @@
                 }
 
                 .container {
-                    max-width: 1200px;
-                    margin: auto;
-                }
-
-                .topo {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 25px;
-                    flex-wrap: wrap;
-                    gap: 15px;
-                    background: #DCE7F3;
-                    padding: 22px;
-                    border-left: 5px solid #17365D;
-                    border-radius: 9px;
-                }
-
-                .topo h1 {
-                    color: #17365D;
-                    margin: 0 0 6px;
-                    font-size: 28px;
-                }
+    width: 100%;
+    max-width: none;
+    margin: 0;
+}
+   .topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 12px;
+    background: #DCE5F0;
+    padding: 14px 18px;
+    border: none;
+    border-radius: 6px;
+}           
+               .topo h1 {
+    color: #1E293B;
+    margin: 0 0 4px;
+    font-size: 22px;
+    font-weight: 600;
+}
 
                 .subtitulo {
                     color: #718096;
@@ -59,12 +59,13 @@
                 }
 
                 .card {
-                    background: white;
-                    padding: 25px;
-                    border-radius: 12px;
-                    box-shadow: 0 3px 12px rgba(20, 45, 75, 0.06);
-                    margin-bottom: 25px;
-                }
+    background: #FFFFFF;
+    padding: 18px;
+    border-radius: 8px;
+    border: 1px solid #E5EAF0;
+    box-shadow: none;
+    margin-bottom: 16px;
+}
 
                 .card h2 {
                     color: #17365D;
@@ -77,18 +78,20 @@
                     font-size: 13px;
                     margin: 0 0 22px;
                 }
-                .titulo-secao {
-    background: #F4F7FB;
-    border-left: 4px solid #17365D;
-    border-radius: 8px;
-    padding: 16px 18px;
-    margin-bottom: 22px;
-}
+          .titulo-secao {
+    background: #E8EEF5;
+    border: none;
+    border-radius: 5px;
+    padding: 12px 15px;
+    margin-bottom: 18px;
+} 
 
 .titulo-secao h2 {
-    color: #17365D;
-    margin: 0 0 6px;
-    font-size: 22px;
+    color: #1E3A5F;
+    margin: 0 0 4px;
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
 }
 
 .titulo-secao p {
@@ -120,11 +123,11 @@
     font-weight: bold;
 }
 
-                .form-grid {
-                    display: grid;
-                    grid-template-columns: repeat(2, 1fr);
-                    gap: 18px;
-                }
+               .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 16px;
+}
 
                 .campo {
                     display: flex;
@@ -138,15 +141,17 @@
                     color: #46566A;
                 }
 
-                .campo input {
-                    width: 100%;
-                    padding: 12px;
-                    border: 1px solid #DCE3EC;
-                    border-radius: 7px;
-                    font-size: 14px;
-                    outline: none;
-                }
-
+  .campo input {
+    width: 100%;
+    padding: 9px 11px;
+    border: 1px solid #B9C7D8;
+    border-radius: 5px;
+    font-size: 13px;
+    outline: none;
+    background: #FFFFFF;
+    color: #263445;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
                 .campo input:focus {
                     border-color: #2864A5;
                     box-shadow: 0 0 0 3px rgba(40, 100, 165, 0.10);
@@ -157,16 +162,18 @@
                 }
 
                 .botao {
-                    margin-top: 22px;
-                    background: #17365D;
-                    color: white;
-                    padding: 13px 22px;
-                    border: none;
-                    border-radius: 7px;
-                    font-weight: bold;
-                    cursor: pointer;
-                    font-size: 14px;
-                }
+    margin-top: 16px;
+    background: #17365D;
+    color: #FFFFFF;
+    padding: 9px 16px;
+    border: none;
+    border-radius: 5px;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: inherit;
+    transition: background 0.2s ease;
+}
 
                 .botao:hover {
                     background: #245184;
@@ -303,7 +310,7 @@
 
                 <div class="topo">
                     <div>
-                        <h1>📦 Gestão de Produtos</h1>
+                        <h1>Gestão de Produtos</h1>
                         <p class="subtitulo">
                             Cadastro e controle de produtos do estoque
                         </p>
@@ -370,7 +377,7 @@
                         </div>
 
                         <button class="botao" type="submit">
-                            + Cadastrar produto
+                            Cadastrar produto
                         </button>
 
                     </form>
@@ -395,12 +402,12 @@
         name="busca"
         placeholder="Buscar por nome ou código SKU"
         value="{{ busca }}"
-        style="flex:2; min-width:220px; height:44px; padding:0 12px; border:1px solid #DCE3EC; border-radius:7px; font-size:14px;"
+       style="flex:2; min-width:220px; height:38px; padding:0 11px; border:1px solid #DCE3EC; border-radius:5px; font-size:13px;"
     >
 
     <select
         name="categoria"
-        style="flex:1; min-width:180px; height:44px; padding:0 12px; border:1px solid #DCE3EC; border-radius:7px; font-size:14px;"
+        style="flex:1; min-width:180px; height:38px; padding:0 11px; border:1px solid #DCE3EC; border-radius:5px; font-size:13px;"
     >
         <option value="">Todas as categorias</option>
 
@@ -412,15 +419,15 @@
         {% endfor %}
     </select>
 
-    <button type="submit" class="botao"
-        style="margin:0; height:44px; padding:0 22px; white-space:nowrap;">
-        Buscar
-    </button>
+   <button type="submit" class="botao"
+    style="margin:0; height:38px; padding:0 16px; white-space:nowrap;">
+    Buscar
+</button>
 
-    <a href="/produtos" class="voltar"
-        style="height:44px; padding:0 22px; display:flex; align-items:center; justify-content:center; white-space:nowrap;">
-        Limpar
-    </a>
+<a href="/produtos" class="voltar"
+   style="height:38px; padding:0 16px; display:flex; align-items:center; justify-content:center; white-space:nowrap; font-size:13px;">
+    Limpar
+</a>
 
 </form>
 
@@ -431,7 +438,6 @@
 </span>
 </div>
 
-                    </div>
 
                     <div class="tabela-container">
 
